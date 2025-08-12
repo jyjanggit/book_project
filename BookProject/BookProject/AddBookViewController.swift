@@ -1,13 +1,8 @@
-//
-//  AddBookViewController.swift
-//  BookProject
-//
-//  Created by JY Jang on 8/7/25.
-//
-
 import UIKit
 
 class AddBookViewController: UIViewController {
+  
+  weak var delegate: AddBookViewControllerDelegate?
   
   let titleTextField: UITextField = {
     let text = UITextField()
@@ -73,17 +68,32 @@ class AddBookViewController: UIViewController {
       textFieldStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
     ])
   }
-
+  
   
   @objc private func cancelTapped() {
     dismiss(animated: true)
   }
   
   @objc private func saveTapped() {
+    guard let title = titleTextField.text, !title.isEmpty,
+          let totalText = totalTextField.text, let total = Int(totalText),
+          let currentText = currentTextField.text, let current = Int(currentText) else {
+      return
+    }
     
+    if (total < current) || (total <= 0) {
+      let alert = UIAlertController(title: "알림", message: "제대로 된 값을 입력해 주세요.", preferredStyle: .alert)
+      let okAction = UIAlertAction(title: "확인", style: .default, handler: nil)
+      alert.addAction(okAction)
+      self.present(alert, animated: true, completion: nil)
+      return
+    }
+    
+    let book = Book(bookTitle: title, totalPage: total, currentPage: current)
+    delegate?.addBookViewController(self, didAdd: book)
     dismiss(animated: true)
   }
   
-
+  
 }
 
