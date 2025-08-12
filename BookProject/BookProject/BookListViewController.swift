@@ -1,15 +1,10 @@
-//
-//  BookListViewController.swift
-//  BookProject
-//
-//  Created by JY Jang on 8/7/25.
-//
 import UIKit
 
 
-final class BookListViewController: UIViewController, UIViewControllerTransitioningDelegate{
+final class BookListViewController: UIViewController {
   
   private var collectionView: UICollectionView!
+  private var viewModel = BookListViewModel()
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -24,26 +19,39 @@ final class BookListViewController: UIViewController, UIViewControllerTransition
   
   @objc private func didTapAdd() {
     let addBookViewController = AddBookViewController()
+    addBookViewController.delegate = self
+    
     let navViewController = UINavigationController(rootViewController: addBookViewController)
-    if #available(iOS 15.0, *) {
-      if let sheet = navViewController.sheetPresentationController {
-        sheet.detents = [.medium()]
-        sheet.prefersGrabberVisible = true
-        sheet.preferredCornerRadius = 16
-      }
-    } else {
-      navViewController.modalPresentationStyle = .custom
-      navViewController.transitioningDelegate = self
+    if let sheet = navViewController.sheetPresentationController {
+      sheet.detents = [.medium()]
+      sheet.prefersGrabberVisible = true
+      sheet.preferredCornerRadius = 16
     }
     present(navViewController, animated: true)
   }
   
   
   private func setupCollectionView() {
-    let layout = UICollectionViewFlowLayout()
-    layout.estimatedItemSize = UICollectionViewFlowLayout.automaticSize
-    layout.sectionInset = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
-    layout.minimumLineSpacing = 20
+    let layout = UICollectionViewCompositionalLayout {_,_ in
+      let group = NSCollectionLayoutGroup.vertical(
+        layoutSize: .init(
+          widthDimension: .fractionalWidth(1.0),
+          heightDimension: .estimated(0.0)
+        ),
+        subitems: [
+          .init(layoutSize: .init(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .estimated(0.0)
+          ))
+        ]
+      )
+      
+      let section = NSCollectionLayoutSection(group: group)
+      section.contentInsets = .init(top: 16, leading: 16, bottom: 16, trailing: 16)
+      section.interGroupSpacing = 20
+      return section
+    }
+    
     
     collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
     collectionView.backgroundColor = UIColor(hex: "#FFFFFF")
@@ -51,9 +59,9 @@ final class BookListViewController: UIViewController, UIViewControllerTransition
     
     
     // 16이상이면 활성화
-    if #available(iOS 16.0, *) {
-      collectionView.selfSizingInvalidation = .enabledIncludingConstraints
-    }
+    //    if #available(iOS 16.0, *) {
+    //      collectionView.selfSizingInvalidation = .enabledIncludingConstraints
+    //    }
     
     collectionView.delegate = self
     collectionView.dataSource = self
@@ -74,18 +82,32 @@ final class BookListViewController: UIViewController, UIViewControllerTransition
 
 extension BookListViewController: UICollectionViewDelegate, UICollectionViewDataSource {
   func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-    return 5
+    return viewModel.numberOfBooks
   }
   
   func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
     guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BookListCell", for: indexPath) as? BookListCell else {
       return UICollectionViewCell()
     }
-    cell.backgroundColor = UIColor(hex: "#FFFFFF")
+    let book = viewModel.book(index: indexPath.item)
+    cell.titleLabel.text = book.bookTitle
+    cell.currentPageLabel.text = "\(book.currentPage)쪽"
+    cell.totalPageLabel.text = "\(book.totalPage)쪽"
+    let percentage = book.totalPage > 0 ? (CGFloat(book.currentPage) / CGFloat(book.totalPage) * 100) : 0
+    cell.chartView.readValue = [(UIColor(hex: "#a2bafb"), percentage)]
     
     return cell
   }
+  
+  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+    .init(width: collectionView.bounds.width - 32, height: 0)
+  }
 }
 
-
+extension BookListViewController: AddBookViewControllerDelegate {
+  func addBookViewController(_ vc: AddBookViewController, didAdd book: Book) {
+    viewModel.addBook(book)
+    collectionView.reloadData()
+  }
+}
 

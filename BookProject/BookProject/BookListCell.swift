@@ -36,7 +36,7 @@ final class ChartView: UIView {
     let backgroundLayer = CAShapeLayer()
     backgroundLayer.name = "removableLayer"
     backgroundLayer.path = backgroundPath.cgPath
-    backgroundLayer.fillColor = UIColor.lightGray.cgColor
+    backgroundLayer.fillColor = UIColor(hex: "#e2e4e9").cgColor
     
     layer.addSublayer(backgroundLayer)
     
@@ -78,7 +78,7 @@ final class BookListCell: UICollectionViewCell {
   
   let titleLabel: UILabel = {
     let label = UILabel()
-    label.text = "책제목쓰면되는곳책제목쓰면되는곳책제목쓰면되는곳"
+    //label.text = "책제목쓰면되는곳책제목쓰면되는곳책제목쓰면되는곳"
     label.numberOfLines = 1
     label.lineBreakMode = .byTruncatingTail
     label.textAlignment = .center
@@ -90,7 +90,7 @@ final class BookListCell: UICollectionViewCell {
   
   let chartView: ChartView = {
     let view = ChartView()
-    view.readValue = [(UIColor.systemBlue, 30)]
+    //view.readValue = [(UIColor(hex: "#a2bafb"), 30)]
     return view
   }()
   
@@ -108,7 +108,7 @@ final class BookListCell: UICollectionViewCell {
   let currentPageLabel: UILabel = {
     let label = UILabel()
     //label.text = "\(current)쪽"
-    label.text = "20쪽"
+    //label.text = "20쪽"
     label.applyBoldCommonStyle()
     return label
   }()
@@ -117,7 +117,7 @@ final class BookListCell: UICollectionViewCell {
   let totalPageLabel: UILabel = {
     let label = UILabel()
     //label.text = "\(total)쪽"
-    label.text = "500쪽"
+    //label.text = "500쪽"
     label.applyCommonStyle()
     return label
   }()
@@ -125,10 +125,11 @@ final class BookListCell: UICollectionViewCell {
   let updateButton: UIButton = {
     let button = UIButton(type: .system)
     button.setTitle("수정", for: .normal)
-    button.backgroundColor = UIColor(hex: "#AEC6CF")
+    button.backgroundColor = UIColor(hex: "#7598fe")
     button.applyButton()
     return button
   }()
+  
   
   let deleteButton: UIButton = {
     let button = UIButton(type: .system)
@@ -240,6 +241,15 @@ final class BookListCell: UICollectionViewCell {
   }
   
   
+  override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
+    
+    let targetSize = CGSize(width: layoutAttributes.size.width, height: 0.0)
+    
+    let size = contentView.systemLayoutSizeFitting(targetSize, withHorizontalFittingPriority: .required, verticalFittingPriority: .fittingSizeLevel)
+    
+    let new = super.preferredLayoutAttributesFitting(layoutAttributes)
+    new.size = CGSize(width: layoutAttributes.size.width, height: ceil(size.height))
+    return new
+  }
   
 }
-
