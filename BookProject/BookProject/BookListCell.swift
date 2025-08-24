@@ -1,13 +1,5 @@
-//
-//  BookListCell.swift
-//  BookProject
-//
-//  Created by JY Jang on 8/7/25.
-//
-
 import UIKit
 
-// 차트
 final class ChartView: UIView {
   
   var readValue = [(UIColor, CGFloat)]() {
@@ -17,107 +9,94 @@ final class ChartView: UIView {
   }
   
   func chart() {
-    layer.sublayers?.forEach{ sublayer in
+    layer.sublayers?.forEach { sublayer in
       if sublayer.name == "removableLayer" {
         sublayer.removeFromSuperlayer()
       }
     }
     
-    
-    let radius = self.bounds.width / 2
+    let radius = bounds.width / 2
     let center = CGPoint(x: bounds.midX, y: radius)
     let innerRadius = radius * 0.6
     
     let startAngle = -CGFloat.pi
     let endAngle = startAngle + CGFloat.pi
-    let backgroundPath = UIBezierPath(arcCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: true)
-    backgroundPath.addArc(withCenter: center, radius: innerRadius, startAngle: endAngle, endAngle: startAngle, clockwise: false)
+    let backgroundPath = UIBezierPath(arcCenter: center,
+                                      radius: radius,
+                                      startAngle: startAngle,
+                                      endAngle: endAngle,
+                                      clockwise: true)
+    backgroundPath.addArc(withCenter: center,
+                          radius: innerRadius,
+                          startAngle: endAngle,
+                          endAngle: startAngle,
+                          clockwise: false)
     
     let backgroundLayer = CAShapeLayer()
     backgroundLayer.name = "removableLayer"
     backgroundLayer.path = backgroundPath.cgPath
     backgroundLayer.fillColor = UIColor(hex: "#e2e4e9").cgColor
-    
     layer.addSublayer(backgroundLayer)
     
-    let current: CGFloat = 100
-    
     if let (color, value) = readValue.first {
-      let currentEndAngle = startAngle + (CGFloat.pi) * (value / current)
+      let currentEndAngle = startAngle + CGFloat.pi * (value / 100)
       let currentPath = UIBezierPath()
       currentPath.move(to: center)
       currentPath.addArc(withCenter: center, radius: radius, startAngle: startAngle, endAngle: currentEndAngle, clockwise: true)
-      
-      
       currentPath.addArc(withCenter: center, radius: innerRadius, startAngle: currentEndAngle, endAngle: startAngle, clockwise: false)
-      
       currentPath.close()
       
       let currentLayer = CAShapeLayer()
       currentLayer.name = "removableLayer"
       currentLayer.path = currentPath.cgPath
       currentLayer.fillColor = color.cgColor
-      
       layer.addSublayer(currentLayer)
-      
     }
-    
   }
   
   override func layoutSubviews() {
     super.layoutSubviews()
     chart()
   }
-  
 }
 
 
+protocol BookListCellUpdateDelegate: AnyObject {
+  func didTapUpdateButton(cell: BookListCell)
+}
+
 final class BookListCell: UICollectionViewCell {
   
-  private let bookListCell = UIView()
+  weak var updateDelegate: BookListCellUpdateDelegate?
   
   let titleLabel: UILabel = {
     let label = UILabel()
-    //label.text = "책제목쓰면되는곳책제목쓰면되는곳책제목쓰면되는곳"
     label.numberOfLines = 1
     label.lineBreakMode = .byTruncatingTail
     label.textAlignment = .center
-    label.setContentHuggingPriority(.defaultLow, for: .horizontal)
-    
     label.applyBoldCommonStyle()
     return label
   }()
   
   let chartView: ChartView = {
     let view = ChartView()
-    //view.readValue = [(UIColor(hex: "#a2bafb"), 30)]
     return view
   }()
   
   let bookImageView: UIImageView = {
-    let imageView = UIImageView(image: UIImage(systemName: "book"))
-    return imageView
+    UIImageView(image: UIImage(systemName: "book"))
   }()
   
-  //차트와 책아이콘
-  let chartParentsView: UIView = {
-    let view = UIView()
-    return view
-  }()
+  let chartParentsView: UIView = UIView()
   
   let currentPageLabel: UILabel = {
     let label = UILabel()
-    //label.text = "\(current)쪽"
-    //label.text = "20쪽"
     label.applyBoldCommonStyle()
     return label
   }()
   
-  
   let totalPageLabel: UILabel = {
     let label = UILabel()
-    //label.text = "\(total)쪽"
-    //label.text = "500쪽"
     label.applyCommonStyle()
     return label
   }()
@@ -130,7 +109,6 @@ final class BookListCell: UICollectionViewCell {
     return button
   }()
   
-  
   let deleteButton: UIButton = {
     let button = UIButton(type: .system)
     button.setTitle("삭제", for: .normal)
@@ -139,8 +117,6 @@ final class BookListCell: UICollectionViewCell {
     return button
   }()
   
-  
-  // 스택뷰
   lazy var pageStackView: UIStackView = {
     let stack = UIStackView(arrangedSubviews: [currentPageLabel, totalPageLabel])
     stack.axis = .horizontal
@@ -168,6 +144,7 @@ final class BookListCell: UICollectionViewCell {
     return stack
   }()
   
+  
   private let containerView: UIView = {
     let view = UIView()
     view.layer.shadowColor = UIColor(hex: "#181818").cgColor
@@ -175,24 +152,28 @@ final class BookListCell: UICollectionViewCell {
     view.layer.shadowOffset = CGSize(width: 0, height: 2)
     view.layer.shadowRadius = 4
     view.layer.masksToBounds = false
-    view.backgroundColor = UIColor(hex: "#FFFFFF")
+    view.backgroundColor = .white
     view.layer.cornerRadius = 10
     return view
   }()
   
-  
   override init(frame: CGRect) {
     super.init(frame: frame)
-    setupLayout()
     
+    updateButton.addTarget(self, action: #selector(updateButtonTapped), for: .touchUpInside)
+    
+    setupLayout()
   }
   
   required init?(coder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
   }
   
+  @objc private func updateButtonTapped() {
+    updateDelegate?.didTapUpdateButton(cell: self)
+  }
+  
   private func setupLayout() {
-    
     contentView.addSubview(containerView)
     containerView.addSubview(titleLabel)
     containerView.addSubview(mainStackView)
@@ -207,7 +188,6 @@ final class BookListCell: UICollectionViewCell {
     bookImageView.translatesAutoresizingMaskIntoConstraints = false
     
     NSLayoutConstraint.activate([
-      
       titleLabel.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 16),
       titleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
       titleLabel.bottomAnchor.constraint(equalTo: mainStackView.topAnchor, constant: -16),
@@ -234,22 +214,19 @@ final class BookListCell: UICollectionViewCell {
       bookImageView.heightAnchor.constraint(equalToConstant: 40),
       bookImageView.bottomAnchor.constraint(equalTo: chartParentsView.bottomAnchor),
       bookImageView.centerXAnchor.constraint(equalTo: chartParentsView.centerXAnchor)
-      
-      
     ])
-    
   }
-  
   
   override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
     
     let targetSize = CGSize(width: layoutAttributes.size.width, height: 0.0)
     
-    let size = contentView.systemLayoutSizeFitting(targetSize, withHorizontalFittingPriority: .required, verticalFittingPriority: .fittingSizeLevel)
+    let size = contentView.systemLayoutSizeFitting(targetSize,
+                                                   withHorizontalFittingPriority: .required,
+                                                   verticalFittingPriority: .fittingSizeLevel)
     
-    let new = super.preferredLayoutAttributesFitting(layoutAttributes)
-    new.size = CGSize(width: layoutAttributes.size.width, height: ceil(size.height))
-    return new
+    let newLayoutAttributes = super.preferredLayoutAttributesFitting(layoutAttributes)
+    newLayoutAttributes.size = CGSize(width: layoutAttributes.size.width, height: ceil(size.height))
+    return newLayoutAttributes
   }
-  
 }
