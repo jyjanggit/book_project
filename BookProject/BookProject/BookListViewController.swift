@@ -93,6 +93,7 @@ extension BookListViewController: UICollectionViewDelegate, UICollectionViewData
     cell.chartView.readValue = [(UIColor(hex: "#a2bafb"), percentage)]
     
     cell.updateDelegate = self
+    cell.deleteDelegate = self
     
     return cell
   }
@@ -132,5 +133,17 @@ extension BookListViewController: BookListCellUpdateDelegate {
     
     let navVC = UINavigationController(rootViewController: addBookVC)
     present(navVC, animated: true)
+  }
+}
+
+
+extension BookListViewController: BookListCellDeleteDelegate {
+  func didTapDeleteButton(cell: BookListCell) {
+    guard let indexPath = collectionView.indexPath(for: cell) else { return }
+    
+    self.viewModel.deleteBook(index: indexPath.item)
+    
+    self.collectionView.deleteItems(at: [indexPath])
+    
   }
 }

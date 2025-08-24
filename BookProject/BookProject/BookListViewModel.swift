@@ -38,4 +38,9 @@ final class BookListViewModel {
    books[index] = updatedBook
   }
   
+  // 책 삭제
+  func deleteBook(index: Int) {
+    books.remove(at: index)
+  }
+  
 }
