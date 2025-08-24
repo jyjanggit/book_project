@@ -6,7 +6,10 @@
 //
 protocol AddBookViewControllerDelegate: AnyObject {
   func addBookViewController(_ vc: AddBookViewController, didAdd book: Book)
+  func updateBookViewController(_ vc: AddBookViewController, didUpdate book: Book, index: Int)
 }
+
+
 
 final class BookListViewModel {
   
@@ -29,4 +32,10 @@ final class BookListViewModel {
   func book(index: Int) -> Book {
     return books[index]
   }
+  
+  // 책 수정
+  func updateBook(_ updatedBook: Book, index: Int) {
+   books[index] = updatedBook
+  }
+  
 }

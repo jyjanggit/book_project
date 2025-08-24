@@ -4,6 +4,9 @@ class AddBookViewController: UIViewController {
   
   weak var delegate: AddBookViewControllerDelegate?
   
+  var bookEdit: Book?
+  var bookIndex: Int?
+  
   let titleTextField: UITextField = {
     let text = UITextField()
     text.placeholder = "책 제목을 입력하세요"
@@ -38,7 +41,13 @@ class AddBookViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     view.backgroundColor = UIColor(hex: "#FFFFFF")
-    self.title = "책 추가"
+    self.title = bookEdit == nil ? "책 추가" : "책 수정"
+    
+    if let editBook = bookEdit {
+      titleTextField.text = editBook.bookTitle
+      totalTextField.text = "\(editBook.totalPage)"
+      currentTextField.text = "\(editBook.currentPage)"
+    }
     
     
     navigationItem.leftBarButtonItem = UIBarButtonItem(
@@ -75,6 +84,8 @@ class AddBookViewController: UIViewController {
   }
   
   @objc private func saveTapped() {
+    
+    
     guard let title = titleTextField.text, !title.isEmpty,
           let totalText = totalTextField.text, let total = Int(totalText),
           let currentText = currentTextField.text, let current = Int(currentText) else {
@@ -90,7 +101,13 @@ class AddBookViewController: UIViewController {
     }
     
     let book = Book(bookTitle: title, totalPage: total, currentPage: current)
-    delegate?.addBookViewController(self, didAdd: book)
+    
+    // 만약 책 인덱스가 있으면(기존 책이면) 수정, 없으면 추가.
+    if let index = bookIndex {
+      delegate?.updateBookViewController(self, didUpdate: book, index: index)
+    } else {
+      delegate?.addBookViewController(self, didAdd: book)
+    }
     dismiss(animated: true)
   }
   
