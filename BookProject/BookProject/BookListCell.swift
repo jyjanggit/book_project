@@ -65,9 +65,14 @@ protocol BookListCellUpdateDelegate: AnyObject {
   func didTapUpdateButton(cell: BookListCell)
 }
 
+protocol BookListCellDeleteDelegate: AnyObject {
+  func didTapDeleteButton(cell: BookListCell)
+}
+
 final class BookListCell: UICollectionViewCell {
   
   weak var updateDelegate: BookListCellUpdateDelegate?
+  weak var deleteDelegate: BookListCellDeleteDelegate?
   
   let titleLabel: UILabel = {
     let label = UILabel()
@@ -161,7 +166,7 @@ final class BookListCell: UICollectionViewCell {
     super.init(frame: frame)
     
     updateButton.addTarget(self, action: #selector(updateButtonTapped), for: .touchUpInside)
-    
+    deleteButton.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
     setupLayout()
   }
   
@@ -171,6 +176,11 @@ final class BookListCell: UICollectionViewCell {
   
   @objc private func updateButtonTapped() {
     updateDelegate?.didTapUpdateButton(cell: self)
+  }
+  
+  @objc private func deleteButtonTapped() {
+    deleteDelegate?.didTapDeleteButton(cell: self)
+    
   }
   
   private func setupLayout() {
