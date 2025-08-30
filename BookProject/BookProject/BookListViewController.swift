@@ -5,34 +5,7 @@ final class BookListViewController: UIViewController {
   private var collectionView: UICollectionView!
   private var viewModel = BookListViewModel()
   
-  
-  
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    view.backgroundColor = UIColor(hex: "#FFFFFF")
-    self.title = "책 목록"
-    
-    let addButton = UIBarButtonItem(barButtonSystemItem: .add,
-                                    target: self,
-                                    action: #selector(didTapAdd))
-    navigationItem.rightBarButtonItem = addButton
-    
-    setupCollectionView()
-  }
-  
-  @objc private func didTapAdd() {
-    let addBookViewController = AddBookViewController()
-    addBookViewController.delegate = self
-    
-    let navViewController = UINavigationController(rootViewController: addBookViewController)
-    if let sheet = navViewController.sheetPresentationController {
-      sheet.detents = [.medium()]
-      sheet.prefersGrabberVisible = true
-      sheet.preferredCornerRadius = 16
-    }
-    present(navViewController, animated: true)
-  }
-  
+  // MARK: - ui
   private func setupCollectionView() {
     let layout = UICollectionViewCompositionalLayout {_,_ in
       let group = NSCollectionLayoutGroup.vertical(
@@ -73,8 +46,42 @@ final class BookListViewController: UIViewController {
     
     collectionView.register(BookListCell.self, forCellWithReuseIdentifier: "BookListCell")
   }
+  
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    view.backgroundColor = UIColor(hex: "#FFFFFF")
+    self.title = "책 목록"
+    
+    let addButton = UIBarButtonItem(barButtonSystemItem: .add,
+                                    target: self,
+                                    action: #selector(didTapAdd))
+    navigationItem.rightBarButtonItem = addButton
+    
+    setupCollectionView()
+    
+    viewModel.delegate = self
+  }
+  
+  
+  // MARK: - 버튼동작
+  @objc private func didTapAdd() {
+    let addBookViewController = AddBookViewController()
+    addBookViewController.delegate = self
+    
+    let navViewController = UINavigationController(rootViewController: addBookViewController)
+    if let sheet = navViewController.sheetPresentationController {
+      sheet.detents = [.medium()]
+      sheet.prefersGrabberVisible = true
+      sheet.preferredCornerRadius = 16
+    }
+    present(navViewController, animated: true)
+  }
+  
+  
 }
 
+
+// MARK: - 델리게이트
 extension BookListViewController: UICollectionViewDelegate, UICollectionViewDataSource {
   
   func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -107,15 +114,13 @@ extension BookListViewController: UICollectionViewDelegate, UICollectionViewData
 extension BookListViewController: AddBookViewControllerDelegate {
   
   
-  func addBookViewController(_ vc: AddBookViewController, didAdd book: Book) {
+  func addBookTappedButton(_ vc: AddBookViewController, didAdd book: Book) {
     viewModel.addBook(book)
-    collectionView.reloadData()
   }
   
   
-  func updateBookViewController(_ vc: AddBookViewController, didUpdate book: Book, index: Int) {
+  func updateBookTappedButton(_ vc: AddBookViewController, didUpdate book: Book, index: Int) {
     viewModel.updateBook(book, index: index)
-    collectionView.reloadData()
     
   }
 }
@@ -142,8 +147,25 @@ extension BookListViewController: BookListCellDeleteDelegate {
     guard let indexPath = collectionView.indexPath(for: cell) else { return }
     
     self.viewModel.deleteBook(index: indexPath.item)
-    
-    self.collectionView.deleteItems(at: [indexPath])
+  
     
   }
+}
+
+extension BookListViewController: viewModelDelegate {
+  func reloadDataAdd() {
+    collectionView.reloadData()
+  }
+  
+  func reloadDataUpdate() {
+    collectionView.reloadData()
+  }
+  
+  func reloadDataDelete(index: Int) {
+    let indexPath = IndexPath(item: index, section: 0)
+    collectionView.deleteItems(at: [indexPath])
+    collectionView.reloadData()
+  }
+
+
 }

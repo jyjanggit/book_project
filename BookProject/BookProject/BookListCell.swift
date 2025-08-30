@@ -1,5 +1,6 @@
 import UIKit
 
+// MARK: - 반원 차트
 final class ChartView: UIView {
   
   var readValue = [(UIColor, CGFloat)]() {
@@ -60,6 +61,7 @@ final class ChartView: UIView {
   }
 }
 
+// MARK: - 델리게이트
 
 protocol BookListCellUpdateDelegate: AnyObject {
   func didTapUpdateButton(cell: BookListCell)
@@ -74,6 +76,8 @@ final class BookListCell: UICollectionViewCell {
   weak var updateDelegate: BookListCellUpdateDelegate?
   weak var deleteDelegate: BookListCellDeleteDelegate?
   
+  
+  // MARK: - ui
   let titleLabel: UILabel = {
     let label = UILabel()
     label.numberOfLines = 1
@@ -162,27 +166,7 @@ final class BookListCell: UICollectionViewCell {
     return view
   }()
   
-  override init(frame: CGRect) {
-    super.init(frame: frame)
-    
-    updateButton.addTarget(self, action: #selector(updateButtonTapped), for: .touchUpInside)
-    deleteButton.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
-    setupLayout()
-  }
-  
-  required init?(coder: NSCoder) {
-    fatalError("init(coder:) has not been implemented")
-  }
-  
-  @objc private func updateButtonTapped() {
-    updateDelegate?.didTapUpdateButton(cell: self)
-  }
-  
-  @objc private func deleteButtonTapped() {
-    deleteDelegate?.didTapDeleteButton(cell: self)
-    
-  }
-  
+  // MARK: - 레이아웃 불러오는 함수
   private func setupLayout() {
     contentView.addSubview(containerView)
     containerView.addSubview(titleLabel)
@@ -226,6 +210,29 @@ final class BookListCell: UICollectionViewCell {
       bookImageView.centerXAnchor.constraint(equalTo: chartParentsView.centerXAnchor)
     ])
   }
+  
+  override init(frame: CGRect) {
+    super.init(frame: frame)
+    
+    updateButton.addTarget(self, action: #selector(updateButtonTapped), for: .touchUpInside)
+    deleteButton.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
+    setupLayout()
+  }
+  
+  required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+  
+  // MARK: - 셀 내부 버튼 클릭 시 동작
+  @objc private func updateButtonTapped() {
+    updateDelegate?.didTapUpdateButton(cell: self)
+  }
+  
+  @objc private func deleteButtonTapped() {
+    deleteDelegate?.didTapDeleteButton(cell: self)
+    
+  }
+  
   
   override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
     
