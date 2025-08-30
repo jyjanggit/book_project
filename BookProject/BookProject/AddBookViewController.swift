@@ -7,6 +7,7 @@ class AddBookViewController: UIViewController {
   var bookEdit: Book?
   var bookIndex: Int?
   
+  // MARK: - ui
   let titleTextField: UITextField = {
     let text = UITextField()
     text.placeholder = "책 제목을 입력하세요"
@@ -38,6 +39,18 @@ class AddBookViewController: UIViewController {
     return stack
   }()
   
+  private func setupLayout() {
+    view.addSubview(textFieldStackView)
+    
+    textFieldStackView.translatesAutoresizingMaskIntoConstraints = false
+    
+    NSLayoutConstraint.activate([
+      textFieldStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+      textFieldStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+      textFieldStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+    ])
+  }
+  
   override func viewDidLoad() {
     super.viewDidLoad()
     view.backgroundColor = UIColor(hex: "#FFFFFF")
@@ -66,19 +79,9 @@ class AddBookViewController: UIViewController {
     setupLayout()
   }
   
-  private func setupLayout() {
-    view.addSubview(textFieldStackView)
-    
-    textFieldStackView.translatesAutoresizingMaskIntoConstraints = false
-    
-    NSLayoutConstraint.activate([
-      textFieldStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
-      textFieldStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-      textFieldStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
-    ])
-  }
+
   
-  
+  // MARK: - 버튼동작
   @objc private func cancelTapped() {
     dismiss(animated: true)
   }
@@ -104,9 +107,9 @@ class AddBookViewController: UIViewController {
     
     // 만약 책 인덱스가 있으면(기존 책이면) 수정, 없으면 추가.
     if let index = bookIndex {
-      delegate?.updateBookViewController(self, didUpdate: book, index: index)
+      delegate?.updateBookTappedButton(self, didUpdate: book, index: index)
     } else {
-      delegate?.addBookViewController(self, didAdd: book)
+      delegate?.addBookTappedButton(self, didAdd: book)
     }
     dismiss(animated: true)
   }
