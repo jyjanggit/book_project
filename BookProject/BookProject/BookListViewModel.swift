@@ -18,6 +18,14 @@ protocol viewModelDelegate: AnyObject {
   func reloadDataDelete(index: Int)
 }
 
+protocol BookListCellUpdateDelegate: AnyObject {
+  func didTapUpdateButton(cell: BookListCell)
+}
+
+protocol BookListCellDeleteDelegate: AnyObject {
+  func didTapDeleteButton(cell: BookListCell)
+}
+
 
 final class BookListViewModel {
   

@@ -47,18 +47,21 @@ final class BookListViewController: UIViewController {
     collectionView.register(BookListCell.self, forCellWithReuseIdentifier: "BookListCell")
   }
   
+  private func naviButton() {
+    let addButton = UIBarButtonItem(barButtonSystemItem: .add,
+                                    target: self,
+                                    action: #selector(didTapAdd))
+    navigationItem.rightBarButtonItem = addButton
+  }
+  
   override func viewDidLoad() {
     super.viewDidLoad()
     view.backgroundColor = UIColor(hex: "#FFFFFF")
     self.title = "책 목록"
     
-    let addButton = UIBarButtonItem(barButtonSystemItem: .add,
-                                    target: self,
-                                    action: #selector(didTapAdd))
-    navigationItem.rightBarButtonItem = addButton
-    
+    naviButton()
     setupCollectionView()
-    
+
     viewModel.delegate = self
   }
   
@@ -147,7 +150,7 @@ extension BookListViewController: BookListCellDeleteDelegate {
     guard let indexPath = collectionView.indexPath(for: cell) else { return }
     
     self.viewModel.deleteBook(index: indexPath.item)
-  
+    
     
   }
 }
@@ -166,6 +169,6 @@ extension BookListViewController: viewModelDelegate {
     collectionView.deleteItems(at: [indexPath])
     collectionView.reloadData()
   }
-
-
+  
+  
 }

@@ -61,15 +61,7 @@ final class ChartView: UIView {
   }
 }
 
-// MARK: - 델리게이트
 
-protocol BookListCellUpdateDelegate: AnyObject {
-  func didTapUpdateButton(cell: BookListCell)
-}
-
-protocol BookListCellDeleteDelegate: AnyObject {
-  func didTapDeleteButton(cell: BookListCell)
-}
 
 final class BookListCell: UICollectionViewCell {
   

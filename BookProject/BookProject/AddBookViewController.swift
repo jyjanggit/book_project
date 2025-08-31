@@ -51,18 +51,7 @@ class AddBookViewController: UIViewController {
     ])
   }
   
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    view.backgroundColor = UIColor(hex: "#FFFFFF")
-    self.title = bookEdit == nil ? "책 추가" : "책 수정"
-    
-    if let editBook = bookEdit {
-      titleTextField.text = editBook.bookTitle
-      totalTextField.text = "\(editBook.totalPage)"
-      currentTextField.text = "\(editBook.currentPage)"
-    }
-    
-    
+  private func naviButton() {
     navigationItem.leftBarButtonItem = UIBarButtonItem(
       title: "취소",
       style: .plain,
@@ -75,7 +64,20 @@ class AddBookViewController: UIViewController {
       target: self,
       action: #selector(saveTapped)
     )
+  }
+  
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    view.backgroundColor = UIColor(hex: "#FFFFFF")
+    self.title = bookEdit == nil ? "책 추가" : "책 수정"
     
+    if let editBook = bookEdit {
+      titleTextField.text = editBook.bookTitle
+      totalTextField.text = "\(editBook.totalPage)"
+      currentTextField.text = "\(editBook.currentPage)"
+    }
+    
+    naviButton()
     setupLayout()
   }
   
