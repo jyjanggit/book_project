@@ -19,32 +19,35 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     guard let windowScene = (scene as? UIWindowScene) else { return }
     
-    let window = UIWindow(windowScene: windowScene)
+    window = UIWindow(windowScene: windowScene)
     
     let bookListVC = BookListViewController()
+    let bookSearchVC = BookSearchViewController()
     
-    let navigationController = UINavigationController(rootViewController: bookListVC)
-
+    let bookListNav = UINavigationController(rootViewController: bookListVC)
+    let bookSearchNav = UINavigationController(rootViewController: bookSearchVC)
+    
     let appearance = UINavigationBarAppearance()
     appearance.configureWithDefaultBackground()
     appearance.titleTextAttributes = [
-        .font: UIFont.boldSystemFont(ofSize: 18),
-        .foregroundColor: UIColor(hex: "#181818")
+      .font: UIFont.boldSystemFont(ofSize: 18),
+      .foregroundColor: UIColor(hex: "#181818")
     ]
-    appearance.largeTitleTextAttributes = [
-        .font: UIFont.systemFont(ofSize: 34, weight: .bold),
-        .foregroundColor: UIColor(hex: "#181818")
-    ]
-
-    navigationController.navigationBar.standardAppearance = appearance
-    navigationController.navigationBar.scrollEdgeAppearance = appearance
-    navigationController.navigationBar.compactAppearance = appearance
-
     
-    window.rootViewController = navigationController
-    self.window = window
-    window.makeKeyAndVisible()
+    bookListNav.navigationBar.standardAppearance = appearance
+    bookSearchNav.navigationBar.standardAppearance = appearance
+    
+    
+    bookListNav.tabBarItem = UITabBarItem(tabBarSystemItem: .bookmarks, tag: 0)
+    bookSearchNav.tabBarItem = UITabBarItem(tabBarSystemItem: .search, tag: 1)
+    
+    let tabBarController = UITabBarController()
+    tabBarController.viewControllers = [bookListNav, bookSearchNav]
+    
+    window?.rootViewController = tabBarController
+    window?.makeKeyAndVisible()
   }
+  
   
   
   func sceneDidDisconnect(_ scene: UIScene) {
