@@ -47,4 +47,13 @@ final class BookSearchViewController: UIViewController, UISearchBarDelegate, UIS
 }
 
 
-
+extension BookSearchViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+  func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    return 5 // 테스트용
+  }
+  
+  func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "SearchListCell", for: indexPath) as? SearchListCell else { return UICollectionViewCell() }
+    return cell
+  }
+}
