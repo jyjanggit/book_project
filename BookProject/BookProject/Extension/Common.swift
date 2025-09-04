@@ -21,6 +21,18 @@ extension UILabel {
     self.numberOfLines = 0
   }
   
+  func applyBoldCommonStyle16() {
+    self.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+    self.textColor = UIColor(hex: "#595c60")
+    self.textAlignment = .center
+  }
+  
+  func applyCommonStyle16() {
+    self.font = UIFont.systemFont(ofSize: 16)
+    self.textColor = UIColor(hex: "#595c60")
+    self.textAlignment = .center
+  }
+  
 }
 
 extension UIButton {

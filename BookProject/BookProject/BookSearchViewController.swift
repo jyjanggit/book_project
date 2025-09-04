@@ -29,7 +29,49 @@ final class BookSearchViewController: UIViewController, UISearchBarDelegate, UIS
     super.viewDidLoad()
     view.backgroundColor = UIColor(hex: "#FFFFFF")
     self.title = "책 검색"
+    setupCollectionView()
     setupLayout()
+  }
+  
+  private func setupCollectionView() {
+    let layout = UICollectionViewCompositionalLayout {_,_ in
+      let group = NSCollectionLayoutGroup.vertical(
+        layoutSize: .init(
+          widthDimension: .fractionalWidth(1.0),
+          heightDimension: .estimated(0.0)
+        ),
+        subitems: [
+          .init(layoutSize: .init(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .estimated(0.0)
+          ))
+        ]
+      )
+      
+      let section = NSCollectionLayoutSection(group: group)
+      section.contentInsets = .init(top: 16, leading: 16, bottom: 16, trailing: 16)
+      section.interGroupSpacing = 20
+      return section
+    }
+    
+    
+    collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+    collectionView.backgroundColor = UIColor(hex: "#FFFFFF")
+    collectionView.translatesAutoresizingMaskIntoConstraints = false
+    
+    collectionView.delegate = self
+    collectionView.dataSource = self
+    
+    view.addSubview(collectionView)
+    
+    NSLayoutConstraint.activate([
+      collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+      collectionView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+      collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+      collectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor)
+    ])
+    
+    collectionView.register(SearchListCell.self, forCellWithReuseIdentifier: "SearchListCell")
   }
   
   private func setupLayout() {
@@ -41,7 +83,6 @@ final class BookSearchViewController: UIViewController, UISearchBarDelegate, UIS
     
     definesPresentationContext = true
   }
-
   
   
 }
@@ -56,4 +97,9 @@ extension BookSearchViewController: UICollectionViewDataSource, UICollectionView
     guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "SearchListCell", for: indexPath) as? SearchListCell else { return UICollectionViewCell() }
     return cell
   }
+  
+  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+    return CGSize(width: collectionView.bounds.width - 32, height: 0)
+  }
 }
+
