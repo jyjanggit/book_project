@@ -7,14 +7,15 @@
 
 import UIKit
 
-final class BookSearchViewController: UIViewController, UISearchBarDelegate, UISearchResultsUpdating {
+
+final class BookSearchViewController: UIViewController {
   
-  
-  func updateSearchResults(for searchController: UISearchController) {
-  }
-  
+
+
   
   private var collectionView: UICollectionView!
+  
+  //private var bookList: [Item] = []
   
   let uISearchController: UISearchController = {
     let uISearchController = UISearchController(searchResultsController: nil)
@@ -24,14 +25,6 @@ final class BookSearchViewController: UIViewController, UISearchBarDelegate, UIS
     uISearchController.searchBar.returnKeyType = .search
     return uISearchController
   }()
-  
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    view.backgroundColor = UIColor(hex: "#FFFFFF")
-    self.title = "책 검색"
-    setupCollectionView()
-    setupLayout()
-  }
   
   private func setupCollectionView() {
     let layout = UICollectionViewCompositionalLayout {_,_ in
@@ -84,6 +77,15 @@ final class BookSearchViewController: UIViewController, UISearchBarDelegate, UIS
     definesPresentationContext = true
   }
   
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    view.backgroundColor = UIColor(hex: "#FFFFFF")
+    self.title = "책 검색"
+    setupCollectionView()
+    setupLayout()
+    Networking.shared.getMethod()
+  }
+  
   
 }
 
@@ -94,7 +96,7 @@ extension BookSearchViewController: UICollectionViewDataSource, UICollectionView
   }
   
   func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-    guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "SearchListCell", for: indexPath) as? SearchListCell else { return UICollectionViewCell() }
+    guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: bookSearchCell.bookSearchIdentifier, for: indexPath) as? SearchListCell else { return UICollectionViewCell() }
     return cell
   }
   
@@ -102,4 +104,18 @@ extension BookSearchViewController: UICollectionViewDataSource, UICollectionView
     return CGSize(width: collectionView.bounds.width - 32, height: 0)
   }
 }
+
+
+extension BookSearchViewController: UISearchResultsUpdating {
+  func updateSearchResults(for searchController: UISearchController) {
+    let keyword = searchController.searchBar.text
+  }
+}
+
+
+extension BookSearchViewController: UISearchBarDelegate {
+  func searchBarButtonCliked(_ searchBar: UISearchBar) {
+  }
+}
+
 
