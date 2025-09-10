@@ -15,9 +15,7 @@ public struct bookListCell {
 }
 
 public enum BookApi {
-//  static let requestUrl = ""
-  static let requestUrl =
-  "https://jsonplaceholder.typicode.com/posts/1"
+  static let requestUrl = ""
 }
 
 public struct bookSearchCell {

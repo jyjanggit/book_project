@@ -1,6 +1,26 @@
 import UIKit
 
-final class BookListViewController: UIViewController {
+final class BookListViewController: UIViewController  {
+  
+  
+  private typealias DataSource = UICollectionViewDiffableDataSource<Section, Item>
+  private typealias Snapshot = NSDiffableDataSourceSnapshot<Section, Item>
+  private enum Section { case main }
+  private struct Item: Hashable {
+    static func == (lhs: BookListViewController.Item, rhs: BookListViewController.Item) -> Bool {
+      return lhs.book.id == rhs.book.id
+    }
+    
+    let book: Book
+    let viewModel: BookListCell.ViewModel
+  
+    func hash(into hasher: inout Hasher) {
+      hasher.combine(book.id)
+    }
+
+  }
+  private var dataSource: DataSource!
+  
   
   private var collectionView: UICollectionView!
   private var viewModel = BookListViewModel()
@@ -32,8 +52,8 @@ final class BookListViewController: UIViewController {
     collectionView.backgroundColor = UIColor(hex: "#FFFFFF")
     collectionView.translatesAutoresizingMaskIntoConstraints = false
     
-    collectionView.delegate = self
-    collectionView.dataSource = self
+    //collectionView.delegate = self
+    //collectionView.dataSource = self
     
     view.addSubview(collectionView)
     
@@ -44,7 +64,7 @@ final class BookListViewController: UIViewController {
       collectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor)
     ])
     
-    collectionView.register(BookListCell.self, forCellWithReuseIdentifier: "BookListCell")
+    collectionView.register(BookListCell.self, forCellWithReuseIdentifier: bookListCell.bookListIdentifier)
   }
   
   private func naviButton() {
@@ -61,10 +81,44 @@ final class BookListViewController: UIViewController {
     
     naviButton()
     setupCollectionView()
-
+    setupDataSource()
+    
     viewModel.delegate = self
   }
   
+  
+  
+  private func setupDataSource() {
+    dataSource = UICollectionViewDiffableDataSource<Section, Item>(
+      collectionView: collectionView
+    ) { [weak self] collectionView, indexPath, item in
+      guard
+        let cell = collectionView.dequeueReusableCell(
+          withReuseIdentifier: bookListCell.bookListIdentifier,
+          for: indexPath
+        ) as? BookListCell,
+        let self = self
+      else {
+        return UICollectionViewCell()
+      }
+      
+      cell.updateDelegate = self
+      cell.deleteDelegate = self
+      
+      cell.configure(viewModel: item.viewModel)
+      return cell
+      
+      
+    }
+  }
+  
+  
+  private func applySnapshot(items: [Item], animated: Bool = true) {
+    var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
+    snapshot.appendSections([.main])
+    snapshot.appendItems(items, toSection: .main)
+    dataSource.apply(snapshot, animatingDifferences: animated)
+  }
   
   // MARK: - 버튼동작
   @objc private func didTapAdd() {
@@ -83,36 +137,7 @@ final class BookListViewController: UIViewController {
   
 }
 
-
 // MARK: - 델리게이트
-extension BookListViewController: UICollectionViewDelegate, UICollectionViewDataSource {
-  
-  func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-    return viewModel.numberOfBooks
-  }
-  
-  func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-    guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: bookListCell.bookListIdentifier, for: indexPath) as? BookListCell else {
-      return UICollectionViewCell()
-    }
-    let book = viewModel.book(index: indexPath.item)
-    cell.titleLabel.text = book.bookTitle
-    cell.currentPageLabel.text = "\(book.currentPage)쪽"
-    cell.totalPageLabel.text = "\(book.totalPage)쪽"
-    let percentage = book.totalPage > 0 ? (CGFloat(book.currentPage) / CGFloat(book.totalPage) * 100) : 0
-    cell.chartView.readValue = [(UIColor(hex: "#a2bafb"), percentage)]
-    
-    cell.updateDelegate = self
-    cell.deleteDelegate = self
-    
-    return cell
-  }
-  
-  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-    .init(width: collectionView.bounds.width - 32, height: 0)
-  }
-}
-
 
 extension BookListViewController: AddBookViewControllerDelegate {
   
@@ -122,22 +147,21 @@ extension BookListViewController: AddBookViewControllerDelegate {
   }
   
   
-  func updateBookTappedButton(_ vc: AddBookViewController, didUpdate book: Book, index: Int) {
-    viewModel.updateBook(book, index: index)
+  func updateBookTappedButton(_ vc: AddBookViewController, didUpdate book: Book, bookID: String) {
+    viewModel.updateBook(book, bookID: bookID)
     
   }
 }
 
 extension BookListViewController: BookListCellUpdateDelegate {
   
-  func didTapUpdateButton(cell: BookListCell) {
-    guard let indexPath = collectionView.indexPath(for: cell) else { return }
-    let book = viewModel.book(index: indexPath.item)
+  func didTapUpdateButton(bookID: String) {
+    guard let book = viewModel.findBook(by: bookID) else { return }
     
     let addBookVC = AddBookViewController()
     addBookVC.delegate = self
     addBookVC.bookEdit = book
-    addBookVC.bookIndex = indexPath.item
+    addBookVC.bookID = bookID
     
     let navVC = UINavigationController(rootViewController: addBookVC)
     present(navVC, animated: true)
@@ -146,29 +170,15 @@ extension BookListViewController: BookListCellUpdateDelegate {
 
 
 extension BookListViewController: BookListCellDeleteDelegate {
-  func didTapDeleteButton(cell: BookListCell) {
-    guard let indexPath = collectionView.indexPath(for: cell) else { return }
-    
-    self.viewModel.deleteBook(index: indexPath.item)
+  func didTapDeleteButton(bookID: String) {
+    self.viewModel.deleteBook(bookID: bookID)
     
     
   }
 }
 
 extension BookListViewController: viewModelDelegate {
-  func reloadDataAdd() {
-    collectionView.reloadData()
+  func reloadData(books: [Book]) {
+    applySnapshot(items: books.map { .init(book: $0) })
   }
-  
-  func reloadDataUpdate() {
-    collectionView.reloadData()
-  }
-  
-  func reloadDataDelete(index: Int) {
-    let indexPath = IndexPath(item: index, section: 0)
-    collectionView.deleteItems(at: [indexPath])
-    collectionView.reloadData()
-  }
-  
-  
 }

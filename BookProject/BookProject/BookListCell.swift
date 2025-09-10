@@ -65,8 +65,17 @@ final class ChartView: UIView {
 
 final class BookListCell: UICollectionViewCell {
   
+  struct ViewModel {
+    let id: String
+    let title: String
+    let currentPage: String
+    let totalPage: String
+    let chartReadValue:[(UIColor, CGFloat)]
+  }
+  
   weak var updateDelegate: BookListCellUpdateDelegate?
   weak var deleteDelegate: BookListCellDeleteDelegate?
+  var bookID: String?
   
   
   // MARK: - ui
@@ -215,13 +224,23 @@ final class BookListCell: UICollectionViewCell {
     fatalError("init(coder:) has not been implemented")
   }
   
+  func configure(viewModel: ViewModel) {
+    bookID = viewModel.id
+    titleLabel.text = viewModel.title
+    currentPageLabel.text = viewModel.currentPage
+    totalPageLabel.text = viewModel.totalPage
+    chartView.readValue = viewModel.chartReadValue
+  }
+  
   // MARK: - 셀 내부 버튼 클릭 시 동작
   @objc private func updateButtonTapped() {
-    updateDelegate?.didTapUpdateButton(cell: self)
+    guard let bookID else { return }
+    updateDelegate?.didTapUpdateButton(bookID: bookID)
   }
   
   @objc private func deleteButtonTapped() {
-    deleteDelegate?.didTapDeleteButton(cell: self)
+    guard let bookID else { return }
+    deleteDelegate?.didTapDeleteButton(bookID: bookID)
     
   }
   

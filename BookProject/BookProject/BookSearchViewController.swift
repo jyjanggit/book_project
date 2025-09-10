@@ -83,7 +83,7 @@ final class BookSearchViewController: UIViewController {
     self.title = "책 검색"
     setupCollectionView()
     setupLayout()
-    Networking.shared.getMethod()
+    //Networking.shared.getMethod()
   }
   
   

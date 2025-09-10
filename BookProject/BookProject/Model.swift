@@ -8,6 +8,7 @@
 import Foundation
 
 struct Book {
+  var id: String
   var bookTitle: String
   var totalPage: Int
   var currentPage: Int
