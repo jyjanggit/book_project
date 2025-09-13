@@ -1,7 +1,7 @@
 import Foundation
 
 
-struct Welcome: Codable {
+struct BookResponse: Codable {
   let version: String?
   let logo: String?
   let title: String?
@@ -37,16 +37,9 @@ class Networking {
   
   static let shared = Networking()
   private init() {}
-  
-  //func fetchData()
-  
-  func getMethod(completion: @escaping ([BookSearchResult]?) -> Void) {
     
-    // url 구조체 생성
-    guard let url = URL(string: BookApi.requestUrl) else {
-      completion(nil)
-      return
-    }
+  //func fetchData(url: URL, type: Codable.Type, completion: @escaping ([BookSearchResult]?) -> Void) { 변경전
+  func fetchData<T: Codable>(url: URL, type: T.Type, completion: @escaping (Result<T, Error>) -> Void) {
     
     //url 요청 생성
     var request = URLRequest(url: url)
@@ -58,22 +51,25 @@ class Networking {
     let task = session.dataTask(with: request) { data, response, error in
       // 에러가 없는지 확인
       guard error == nil else {
-        completion(nil)
         return
       }
       
       // 데이터 유무 확인
       guard let safeData = data else {
-        completion(nil)
         return
+      }
+      
+      var string = String(data: safeData, encoding: .utf8)!
+      if url.absoluteString == BookApi.requestUrl {
+        string.removeLast()
       }
       
       do{
         let decoder = JSONDecoder()
-        let bookArray = try decoder.decode(Welcome.self, from: safeData)
-        //completion(BookSearchResult)
+        let response = try decoder.decode(type.self, from: safeData)
+        completion(.success(response))
       } catch {
-        print("Decoding error:", error)
+        completion(.failure(error))
       }
       
     }

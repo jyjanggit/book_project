@@ -65,18 +65,6 @@ final class ChartView: UIView {
 
 final class BookListCell: UICollectionViewCell {
   
-  struct ViewModel {
-    let id: String
-    let title: String
-    let currentPage: String
-    let totalPage: String
-    let chartReadValue:[(UIColor, CGFloat)]
-  }
-  
-  weak var updateDelegate: BookListCellUpdateDelegate?
-  weak var deleteDelegate: BookListCellDeleteDelegate?
-  var bookID: String?
-  
   
   // MARK: - ui
   let titleLabel: UILabel = {
@@ -223,6 +211,23 @@ final class BookListCell: UICollectionViewCell {
   required init?(coder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
   }
+  
+  
+  
+  weak var updateDelegate: BookListCellUpdateDelegate?
+  weak var deleteDelegate: BookListCellDeleteDelegate?
+  var bookID: String?
+  
+  struct ViewModel {
+    let id: String
+    let title: String
+    let currentPage: String
+    let totalPage: String
+    let chartReadValue:[(UIColor, CGFloat)]
+  }
+  
+  
+  
   
   func configure(viewModel: ViewModel) {
     bookID = viewModel.id

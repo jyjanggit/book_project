@@ -14,8 +14,9 @@ final class BookSearchViewController: UIViewController {
 
   
   private var collectionView: UICollectionView!
+  var networkManager = Networking.shared
   
-  //private var bookList: [Item] = []
+  private var bookList: [BookSearchResult] = []
   
   let uISearchController: UISearchController = {
     let uISearchController = UISearchController(searchResultsController: nil)
@@ -77,13 +78,17 @@ final class BookSearchViewController: UIViewController {
     definesPresentationContext = true
   }
   
+  private func setupSearchBar() {
+  
+  }
+  
   override func viewDidLoad() {
     super.viewDidLoad()
     view.backgroundColor = UIColor(hex: "#FFFFFF")
     self.title = "책 검색"
     setupCollectionView()
     setupLayout()
-    //Networking.shared.getMethod()
+    setupSearchBar()
   }
   
   
@@ -97,6 +102,9 @@ extension BookSearchViewController: UICollectionViewDataSource, UICollectionView
   
   func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
     guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: bookSearchCell.bookSearchIdentifier, for: indexPath) as? SearchListCell else { return UICollectionViewCell() }
+//    cell.bookImageView = 
+//    cell.titleLabel =
+//    cell.descLabel =
     return cell
   }
   

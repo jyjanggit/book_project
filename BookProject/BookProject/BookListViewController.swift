@@ -3,22 +3,28 @@ import UIKit
 final class BookListViewController: UIViewController  {
   
   
+  
+  
   private typealias DataSource = UICollectionViewDiffableDataSource<Section, Item>
   private typealias Snapshot = NSDiffableDataSourceSnapshot<Section, Item>
   private enum Section { case main }
+  
+  
+  
   private struct Item: Hashable {
+    let viewModel: BookListCell.ViewModel
+    
     static func == (lhs: BookListViewController.Item, rhs: BookListViewController.Item) -> Bool {
-      return lhs.book.id == rhs.book.id
+      return lhs.viewModel.id == rhs.viewModel.id
     }
     
-    let book: Book
-    let viewModel: BookListCell.ViewModel
-  
     func hash(into hasher: inout Hasher) {
-      hasher.combine(book.id)
+      hasher.combine(viewModel.id)
     }
-
+    
   }
+  
+  
   private var dataSource: DataSource!
   
   
@@ -82,30 +88,25 @@ final class BookListViewController: UIViewController  {
     naviButton()
     setupCollectionView()
     setupDataSource()
-    
     viewModel.delegate = self
+    
   }
   
   
   
   private func setupDataSource() {
-    dataSource = UICollectionViewDiffableDataSource<Section, Item>(
-      collectionView: collectionView
-    ) { [weak self] collectionView, indexPath, item in
-      guard
-        let cell = collectionView.dequeueReusableCell(
-          withReuseIdentifier: bookListCell.bookListIdentifier,
-          for: indexPath
-        ) as? BookListCell,
-        let self = self
+    dataSource = UICollectionViewDiffableDataSource<Section, Item>( collectionView: collectionView ) { [weak self] collectionView, indexPath, item in
+      guard let cell = collectionView.dequeueReusableCell( withReuseIdentifier: bookListCell.bookListIdentifier, for: indexPath) as? BookListCell,
+            let self = self
       else {
         return UICollectionViewCell()
       }
       
       cell.updateDelegate = self
       cell.deleteDelegate = self
+    
       
-      cell.configure(viewModel: item.viewModel)
+      cell.configure(viewModel: item.viewModel) // 셀에 있던 구조체에 들어간 거 받아넣음..하나씩
       return cell
       
       
@@ -177,8 +178,11 @@ extension BookListViewController: BookListCellDeleteDelegate {
   }
 }
 
+
+
 extension BookListViewController: viewModelDelegate {
-  func reloadData(books: [Book]) {
-    applySnapshot(items: books.map { .init(book: $0) })
+  func reloadData(books: [BookListCell.ViewModel]) {
+    applySnapshot(items: books.map { Item(viewModel: $0) })
   }
 }
+

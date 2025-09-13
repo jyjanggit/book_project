@@ -13,7 +13,7 @@ protocol AddBookViewControllerDelegate: AnyObject {
 }
 
 protocol viewModelDelegate: AnyObject {
-  func reloadData(books: [Book])
+  func reloadData(books: [BookListCell.ViewModel])
 }
 
 protocol BookListCellUpdateDelegate: AnyObject {
@@ -29,18 +29,14 @@ final class BookListViewModel {
   
   weak var delegate: viewModelDelegate?
   
+  
   // 책 목록 배열
   private var books: [Book] = []
   
   // 책 추가
   func addBook(_ book: Book) {
     books.append(book)
-    delegate?.reloadData(books: books)
-  }
-  
-  // 책 개수
-  var numberOfBooks: Int {
-    return books.count
+    bookToViewModelReloadDelegate()
   }
   
   
@@ -49,18 +45,21 @@ final class BookListViewModel {
     return books[index]
   }
   
-  func bookViewModel(index: Int) -> BookListCell.ViewModel? {
-    let percentage = books[index].totalPage > 0 ? (CGFloat(books[index].currentPage) / CGFloat(books[index].totalPage) * 100) : 0
-
-    return BookListCell.ViewModel (
-      id: books[index].id,
-      title: books[index].bookTitle,
-      currentPage: "\(books[index].currentPage)쪽",
-      totalPage: "\(books[index].totalPage)쪽",
-      chartReadValue: [(UIColor(hex: "#a2bafb"), percentage)]
-    )
-
+  private func bookToViewModelReloadDelegate() {
+    // 1.Book ->BookListCell.ViewModel로 변환
+    let viewModels = books.map { book in
+      BookListCell.ViewModel(
+        id: book.id,
+        title: book.bookTitle,
+        currentPage: "\(book.currentPage)쪽",
+        totalPage: "\(book.totalPage)쪽",
+        chartReadValue: [(UIColor(hex: "#a2bafb"), book.percentage)]
+      )
+    }
+    // 2.변환한 것을 담아서 리로드
+    delegate?.reloadData(books: viewModels)
   }
+  
   
   func findBook(by id: String) -> Book? {
     // 아이디로 책 찾는 기능
@@ -72,16 +71,14 @@ final class BookListViewModel {
   func updateBook(_ updatedBook: Book, bookID: String) {
     guard let index = books.firstIndex(where: { $0.id == bookID }) else { return }
     books[index] = updatedBook
-    delegate?.reloadData(books: books)
+    bookToViewModelReloadDelegate()
   }
   
   // 책 삭제
   func deleteBook(bookID: String) {
-    
     guard let index = books.firstIndex(where: { $0.id == bookID }) else { return }
-    
     books.remove(at: index)
-    delegate?.reloadData(books: books)
+    bookToViewModelReloadDelegate()
   }
   
 }
