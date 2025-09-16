@@ -34,7 +34,7 @@ final class BookListViewModel {
   private var books: [Book] = []
   
   // 책 추가
-  func addBook(_ book: Book) {
+  func addBookTappedButton(_ book: Book) {
     books.append(book)
     bookToViewModelReloadDelegate()
   }
@@ -47,18 +47,17 @@ final class BookListViewModel {
   
   private func bookToViewModelReloadDelegate() {
     // 1.Book ->BookListCell.ViewModel로 변환
-    let viewModels = books.map { book in
-      BookListCell.ViewModel(
+    let viewModels = books.map { book in BookListCell.ViewModel(
         id: book.id,
         title: book.bookTitle,
         currentPage: "\(book.currentPage)쪽",
         totalPage: "\(book.totalPage)쪽",
-        chartReadValue: [(UIColor(hex: "#a2bafb"), book.percentage)]
-      )
-    }
+        chartReadValue: book.percentage
+    )}
     // 2.변환한 것을 담아서 리로드
     delegate?.reloadData(books: viewModels)
   }
+  
   
   
   func findBook(by id: String) -> Book? {
@@ -68,14 +67,14 @@ final class BookListViewModel {
   }
   
   // 책 수정
-  func updateBook(_ updatedBook: Book, bookID: String) {
+  func didTapUpdateButton(_ updatedBook: Book, bookID: String) {
     guard let index = books.firstIndex(where: { $0.id == bookID }) else { return }
     books[index] = updatedBook
     bookToViewModelReloadDelegate()
   }
   
   // 책 삭제
-  func deleteBook(bookID: String) {
+  func didTapDeleteButton(bookID: String) {
     guard let index = books.firstIndex(where: { $0.id == bookID }) else { return }
     books.remove(at: index)
     bookToViewModelReloadDelegate()

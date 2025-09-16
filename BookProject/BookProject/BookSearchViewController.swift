@@ -10,13 +10,14 @@ import UIKit
 
 final class BookSearchViewController: UIViewController {
   
-
-
+  
+  
   
   private var collectionView: UICollectionView!
+  private var viewModel = BookSearchViewModel()
+  
   var networkManager = Networking.shared
   
-  private var bookList: [BookSearchResult] = []
   
   let uISearchController: UISearchController = {
     let uISearchController = UISearchController(searchResultsController: nil)
@@ -79,8 +80,21 @@ final class BookSearchViewController: UIViewController {
   }
   
   private func setupSearchBar() {
-  
+    
   }
+  
+//  func setupData() {
+//    networkManager.fetchData(searchText: "해리포터") { (result: Result<BookResponse, NetworkError>) in
+//      switch result {
+//      case .success(let T):
+//        
+//      case .failure(let error):
+//        <#code#>
+//      }
+//    }
+//  }
+  
+  
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -89,6 +103,7 @@ final class BookSearchViewController: UIViewController {
     setupCollectionView()
     setupLayout()
     setupSearchBar()
+    //setupData()
   }
   
   
@@ -102,9 +117,9 @@ extension BookSearchViewController: UICollectionViewDataSource, UICollectionView
   
   func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
     guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: bookSearchCell.bookSearchIdentifier, for: indexPath) as? SearchListCell else { return UICollectionViewCell() }
-//    cell.bookImageView = 
-//    cell.titleLabel =
-//    cell.descLabel =
+    //    cell.bookImageView =
+    //    cell.titleLabel =
+    //    cell.descLabel =
     return cell
   }
   
@@ -122,7 +137,9 @@ extension BookSearchViewController: UISearchResultsUpdating {
 
 
 extension BookSearchViewController: UISearchBarDelegate {
-  func searchBarButtonCliked(_ searchBar: UISearchBar) {
+  func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+    guard let query = searchBar.text else { return }
+    //fetchBooks(query: query)
   }
 }
 

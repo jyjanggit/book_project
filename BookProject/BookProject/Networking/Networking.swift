@@ -1,6 +1,12 @@
 import Foundation
 
 
+enum NetworkError: Error {
+  case networkingError
+  case dataError
+  case parseError
+}
+
 struct BookResponse: Codable {
   let version: String?
   let logo: String?
@@ -33,13 +39,22 @@ struct BookSearchResult: Codable {
 
 
 
-class Networking {
+final class Networking {
   
   static let shared = Networking()
   private init() {}
+  
+  // url 받아오기
+  func fetchData<T: Codable>(searchText: String, completion: @escaping (Result<T, NetworkError>) -> Void) {
+    let URL = "\(BookApi.bookURL)&query=\(searchText)&querytype=keyword&output=js"
+    performrequest(url: searchText, type: T.self) { result in
+      completion(result)
+    }
+  }
+  
+  private func performrequest<T: Codable>(url: String, type: T.Type, completion: @escaping (Result<T, NetworkError>) -> Void) {
     
-  //func fetchData(url: URL, type: Codable.Type, completion: @escaping ([BookSearchResult]?) -> Void) { 변경전
-  func fetchData<T: Codable>(url: URL, type: T.Type, completion: @escaping (Result<T, Error>) -> Void) {
+    guard let url = URL(string: url) else { return }
     
     //url 요청 생성
     var request = URLRequest(url: url)
@@ -49,27 +64,27 @@ class Networking {
     let session = URLSession.shared
     
     let task = session.dataTask(with: request) { data, response, error in
-      // 에러가 없는지 확인
-      guard error == nil else {
+      
+      if error != nil {
+        completion(.failure(.networkingError))
         return
       }
       
       // 데이터 유무 확인
       guard let safeData = data else {
+        completion(.failure(.dataError))
         return
       }
       
       var string = String(data: safeData, encoding: .utf8)!
-      if url.absoluteString == BookApi.requestUrl {
+      if url.absoluteString == BookApi.bookURL {
         string.removeLast()
       }
       
-      do{
-        let decoder = JSONDecoder()
-        let response = try decoder.decode(type.self, from: safeData)
-        completion(.success(response))
-      } catch {
-        completion(.failure(error))
+      if let bookParsing = self.parseJSON(safeData, type: T.self) {
+        completion(.success(bookParsing))
+      } else {
+        completion(.failure(.parseError))
       }
       
     }
@@ -77,7 +92,19 @@ class Networking {
     task.resume()
     
   }
-
+  
+  // 데이터 제대로 받아지는지 확인
+  private func parseJSON<T: Decodable>(_ data: Data, type: T.Type) -> T? {
+    do {
+      let decoded = try JSONDecoder().decode(type, from: data)
+      return decoded
+    } catch {
+      print(error.localizedDescription)
+      return nil
+    }
+  }
+  
+  
 }
 
 

@@ -15,7 +15,8 @@ public struct bookListCell {
 }
 
 public enum BookApi {
-  static let requestUrl = "http://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=ttbjjy9102241351001&query=해리포터&querytype=keyword&output=js"
+  static let bookURL = "http://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=ttbjjy9102241351001"
+
 }
 
 public struct bookSearchCell {

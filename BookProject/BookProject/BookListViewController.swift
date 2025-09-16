@@ -14,9 +14,9 @@ final class BookListViewController: UIViewController  {
   private struct Item: Hashable {
     let viewModel: BookListCell.ViewModel
     
-    static func == (lhs: BookListViewController.Item, rhs: BookListViewController.Item) -> Bool {
-      return lhs.viewModel.id == rhs.viewModel.id
-    }
+//    static func == (lhs: BookListViewController.Item, rhs: BookListViewController.Item) -> Bool {
+//      return lhs.viewModel == rhs.viewModel
+//    }
     
     func hash(into hasher: inout Hasher) {
       hasher.combine(viewModel.id)
@@ -144,12 +144,12 @@ extension BookListViewController: AddBookViewControllerDelegate {
   
   
   func addBookTappedButton(_ vc: AddBookViewController, didAdd book: Book) {
-    viewModel.addBook(book)
+    viewModel.addBookTappedButton(book)
   }
   
   
   func updateBookTappedButton(_ vc: AddBookViewController, didUpdate book: Book, bookID: String) {
-    viewModel.updateBook(book, bookID: bookID)
+    viewModel.didTapUpdateButton(book, bookID: bookID)
     
   }
 }
@@ -172,12 +172,9 @@ extension BookListViewController: BookListCellUpdateDelegate {
 
 extension BookListViewController: BookListCellDeleteDelegate {
   func didTapDeleteButton(bookID: String) {
-    self.viewModel.deleteBook(bookID: bookID)
-    
-    
+    self.viewModel.didTapDeleteButton(bookID: bookID)
   }
 }
-
 
 
 extension BookListViewController: viewModelDelegate {

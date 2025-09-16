@@ -3,7 +3,7 @@ import UIKit
 // MARK: - 반원 차트
 final class ChartView: UIView {
   
-  var readValue = [(UIColor, CGFloat)]() {
+  var readValue = CGFloat() {
     didSet {
       chart()
     }
@@ -39,20 +39,20 @@ final class ChartView: UIView {
     backgroundLayer.fillColor = UIColor(hex: "#e2e4e9").cgColor
     layer.addSublayer(backgroundLayer)
     
-    if let (color, value) = readValue.first {
-      let currentEndAngle = startAngle + CGFloat.pi * (value / 100)
-      let currentPath = UIBezierPath()
-      currentPath.move(to: center)
-      currentPath.addArc(withCenter: center, radius: radius, startAngle: startAngle, endAngle: currentEndAngle, clockwise: true)
-      currentPath.addArc(withCenter: center, radius: innerRadius, startAngle: currentEndAngle, endAngle: startAngle, clockwise: false)
-      currentPath.close()
-      
-      let currentLayer = CAShapeLayer()
-      currentLayer.name = "removableLayer"
-      currentLayer.path = currentPath.cgPath
-      currentLayer.fillColor = color.cgColor
-      layer.addSublayer(currentLayer)
-    }
+    let value = readValue
+    let currentEndAngle = startAngle + CGFloat.pi * (value / 100)
+    let currentPath = UIBezierPath()
+    currentPath.move(to: center)
+    currentPath.addArc(withCenter: center, radius: radius, startAngle: startAngle, endAngle: currentEndAngle, clockwise: true)
+    currentPath.addArc(withCenter: center, radius: innerRadius, startAngle: currentEndAngle, endAngle: startAngle, clockwise: false)
+    currentPath.close()
+    
+    let currentLayer = CAShapeLayer()
+    currentLayer.name = "removableLayer"
+    currentLayer.path = currentPath.cgPath
+    currentLayer.fillColor = UIColor(hex: "#a2bafb").cgColor
+    layer.addSublayer(currentLayer)
+    
   }
   
   override func layoutSubviews() {
@@ -218,12 +218,16 @@ final class BookListCell: UICollectionViewCell {
   weak var deleteDelegate: BookListCellDeleteDelegate?
   var bookID: String?
   
-  struct ViewModel {
+  struct ViewModel: Equatable {
+    //    static func == (lhs: BookListCell.ViewModel, rhs: BookListCell.ViewModel) -> Bool {
+    //      
+    //    }
+    
     let id: String
     let title: String
     let currentPage: String
     let totalPage: String
-    let chartReadValue:[(UIColor, CGFloat)]
+    let chartReadValue: CGFloat
   }
   
   
