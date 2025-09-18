@@ -144,12 +144,12 @@ extension BookListViewController: AddBookViewControllerDelegate {
   
   
   func addBookTappedButton(_ vc: AddBookViewController, didAdd book: Book) {
-    viewModel.addBookTappedButton(book)
+    viewModel.addBookTappedButton(addBook: book)
   }
   
   
   func updateBookTappedButton(_ vc: AddBookViewController, didUpdate book: Book, bookID: String) {
-    viewModel.didTapUpdateButton(book, bookID: bookID)
+    viewModel.handleTapUpdateButton(updatedBook: book, bookID: bookID)
     
   }
 }
@@ -172,7 +172,7 @@ extension BookListViewController: BookListCellUpdateDelegate {
 
 extension BookListViewController: BookListCellDeleteDelegate {
   func didTapDeleteButton(bookID: String) {
-    self.viewModel.didTapDeleteButton(bookID: bookID)
+    self.viewModel.handleTapDeleteButton(bookID: bookID)
   }
 }
 

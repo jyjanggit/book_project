@@ -34,8 +34,8 @@ final class BookListViewModel {
   private var books: [Book] = []
   
   // 책 추가
-  func addBookTappedButton(_ book: Book) {
-    books.append(book)
+  func addBookTappedButton(addBook: Book) {
+    books.append(addBook)
     bookToViewModelReloadDelegate()
   }
   
@@ -67,14 +67,14 @@ final class BookListViewModel {
   }
   
   // 책 수정
-  func didTapUpdateButton(_ updatedBook: Book, bookID: String) {
+  func handleTapUpdateButton(updatedBook: Book, bookID: String) {
     guard let index = books.firstIndex(where: { $0.id == bookID }) else { return }
     books[index] = updatedBook
     bookToViewModelReloadDelegate()
   }
   
   // 책 삭제
-  func didTapDeleteButton(bookID: String) {
+  func handleTapDeleteButton(bookID: String) {
     guard let index = books.firstIndex(where: { $0.id == bookID }) else { return }
     books.remove(at: index)
     bookToViewModelReloadDelegate()
