@@ -14,7 +14,7 @@ final class SearchListCell: UICollectionViewCell {
     let label = UILabel()
     label.applyBoldCommonStyle16()
     label.numberOfLines = 1
-    label.text = "여기는 책 제목을 받아오는 칸입니다"
+    //label.text = "여기는 책 제목을 받아오는 칸입니다"
     return label
   }()
   
@@ -22,7 +22,7 @@ final class SearchListCell: UICollectionViewCell {
     let label = UILabel()
     label.applyCommonStyle16()
     label.numberOfLines = 1
-    label.text = "여기는 저자의 이름을 받아오는 칸입니다"
+    //label.text = "여기는 저자의 이름을 받아오는 칸입니다"
     return label
   }()
   

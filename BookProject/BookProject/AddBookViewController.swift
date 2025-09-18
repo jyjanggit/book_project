@@ -5,7 +5,7 @@ class AddBookViewController: UIViewController {
   weak var delegate: AddBookViewControllerDelegate?
   
   var bookEdit: Book?
-  var bookIndex: Int?
+  var bookID: String?
   
   // MARK: - ui
   let titleTextField: UITextField = {
@@ -105,11 +105,11 @@ class AddBookViewController: UIViewController {
       return
     }
     
-    let book = Book(bookTitle: title, totalPage: total, currentPage: current)
+    let book = Book(id: bookID ?? UUID().uuidString, bookTitle: title, totalPage: total, currentPage: current)
     
-    // 만약 책 인덱스가 있으면(기존 책이면) 수정, 없으면 추가.
-    if let index = bookIndex {
-      delegate?.updateBookTappedButton(self, didUpdate: book, index: index)
+    // 만약 책 있으면(기존 책이면) 수정, 없으면 추가.
+    if let bookID = bookID {
+      delegate?.updateBookTappedButton(self, didUpdate: book, bookID: bookID)
     } else {
       delegate?.addBookTappedButton(self, didAdd: book)
     }

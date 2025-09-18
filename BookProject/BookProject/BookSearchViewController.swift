@@ -7,14 +7,17 @@
 
 import UIKit
 
-final class BookSearchViewController: UIViewController, UISearchBarDelegate, UISearchResultsUpdating {
+
+final class BookSearchViewController: UIViewController {
   
   
-  func updateSearchResults(for searchController: UISearchController) {
-  }
   
   
   private var collectionView: UICollectionView!
+  private var viewModel = BookSearchViewModel()
+  
+  var networkManager = Networking.shared
+  
   
   let uISearchController: UISearchController = {
     let uISearchController = UISearchController(searchResultsController: nil)
@@ -24,14 +27,6 @@ final class BookSearchViewController: UIViewController, UISearchBarDelegate, UIS
     uISearchController.searchBar.returnKeyType = .search
     return uISearchController
   }()
-  
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    view.backgroundColor = UIColor(hex: "#FFFFFF")
-    self.title = "책 검색"
-    setupCollectionView()
-    setupLayout()
-  }
   
   private func setupCollectionView() {
     let layout = UICollectionViewCompositionalLayout {_,_ in
@@ -84,6 +79,33 @@ final class BookSearchViewController: UIViewController, UISearchBarDelegate, UIS
     definesPresentationContext = true
   }
   
+  private func setupSearchBar() {
+    
+  }
+  
+//  func setupData() {
+//    networkManager.fetchData(searchText: "해리포터") { (result: Result<BookResponse, NetworkError>) in
+//      switch result {
+//      case .success(let T):
+//        
+//      case .failure(let error):
+//        <#code#>
+//      }
+//    }
+//  }
+  
+  
+  
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    view.backgroundColor = UIColor(hex: "#FFFFFF")
+    self.title = "책 검색"
+    setupCollectionView()
+    setupLayout()
+    setupSearchBar()
+    //setupData()
+  }
+  
   
 }
 
@@ -94,7 +116,10 @@ extension BookSearchViewController: UICollectionViewDataSource, UICollectionView
   }
   
   func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-    guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "SearchListCell", for: indexPath) as? SearchListCell else { return UICollectionViewCell() }
+    guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: bookSearchCell.bookSearchIdentifier, for: indexPath) as? SearchListCell else { return UICollectionViewCell() }
+    //    cell.bookImageView =
+    //    cell.titleLabel =
+    //    cell.descLabel =
     return cell
   }
   
@@ -102,4 +127,20 @@ extension BookSearchViewController: UICollectionViewDataSource, UICollectionView
     return CGSize(width: collectionView.bounds.width - 32, height: 0)
   }
 }
+
+
+extension BookSearchViewController: UISearchResultsUpdating {
+  func updateSearchResults(for searchController: UISearchController) {
+    let keyword = searchController.searchBar.text
+  }
+}
+
+
+extension BookSearchViewController: UISearchBarDelegate {
+  func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+    guard let query = searchBar.text else { return }
+    //fetchBooks(query: query)
+  }
+}
+
 
