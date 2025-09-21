@@ -2,9 +2,26 @@ import UIKit
 
 final class SearchListCell: UICollectionViewCell {
   
+  
+//  struct ViewModel:  {
+//    var itemId: String
+//    var cover: String
+//    var title: String
+//    var description: String
+//    var author: String
+//  }
+  
+  func configure(viewModel: SearchModel) {
+    //bookID = viewModel.itemId
+    titleLabel.text = viewModel.title
+    //bookImageView.image = UIImage(named: "Sample2.jpg")
+    bookImageView.imageFromURL(viewModel.cover)
+    authorLabel.text = viewModel.author
+  }
+  
   let bookImageView: UIImageView = {
     let imageView = UIImageView()
-    imageView.image = UIImage(named: "Sample2.jpg")
+    //imageView.image = UIImage(named: "Sample2.jpg")
     imageView.contentMode = .scaleAspectFill
     imageView.clipsToBounds = true
     return imageView
@@ -18,16 +35,15 @@ final class SearchListCell: UICollectionViewCell {
     return label
   }()
   
-  let descLabel: UILabel = {
+  let authorLabel: UILabel = {
     let label = UILabel()
     label.applyCommonStyle16()
     label.numberOfLines = 1
-    //label.text = "여기는 저자의 이름을 받아오는 칸입니다"
     return label
   }()
   
   lazy var textStackView: UIStackView = {
-    let stack = UIStackView(arrangedSubviews: [titleLabel, descLabel])
+    let stack = UIStackView(arrangedSubviews: [titleLabel, authorLabel])
     stack.axis = .vertical
     stack.spacing = 12
     stack.alignment = .leading
@@ -59,8 +75,8 @@ final class SearchListCell: UICollectionViewCell {
       searchCellStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16),
       searchCellStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
       
-      bookImageView.widthAnchor.constraint(equalToConstant: 80),
-      bookImageView.heightAnchor.constraint(equalToConstant: 100),
+      bookImageView.widthAnchor.constraint(equalToConstant: 60),
+      bookImageView.heightAnchor.constraint(equalToConstant: 85),
       
       textStackView.leadingAnchor.constraint(equalTo: bookImageView.trailingAnchor, constant: 16)
     ])
@@ -92,4 +108,23 @@ final class SearchListCell: UICollectionViewCell {
     return newLayoutAttributes
   }
   
+}
+
+
+// 이미지 url로 받아오기
+extension UIImageView {
+  func imageFromURL(_ urlString: String) {
+    // 기본 이미지
+    self.image = UIImage(named: "Sample2.jpg")
+    
+    guard let url = URL(string: urlString) else { return }
+    
+    URLSession.shared.dataTask(with: url) { data, _, _ in
+      if let data = data, let image = UIImage(data: data) {
+        DispatchQueue.main.async {
+          self.image = image
+        }
+      }
+    }.resume()
+  }
 }

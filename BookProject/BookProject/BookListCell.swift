@@ -219,10 +219,7 @@ final class BookListCell: UICollectionViewCell {
   var bookID: String?
   
   struct ViewModel: Equatable {
-    //    static func == (lhs: BookListCell.ViewModel, rhs: BookListCell.ViewModel) -> Bool {
-    //      
-    //    }
-    
+
     let id: String
     let title: String
     let currentPage: String

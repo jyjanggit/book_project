@@ -28,7 +28,7 @@ protocol BookListCellDeleteDelegate: AnyObject {
 final class BookListViewModel {
   
   weak var delegate: viewModelDelegate?
-  
+  let coreDataManager = CoredataManager.shared
   
   // 책 목록 배열
   private var books: [Book] = []
@@ -56,6 +56,10 @@ final class BookListViewModel {
     )}
     // 2.변환한 것을 담아서 리로드
     delegate?.reloadData(books: viewModels)
+    
+    
+    //let bookData = coreDataManager.getBookListFromCoreData()
+    
   }
   
   
