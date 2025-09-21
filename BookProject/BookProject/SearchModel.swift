@@ -1,8 +1,10 @@
 import Foundation
 
-struct SearchModel {
-  var id: String // api로 받아오는데 필요한가?
+struct SearchModel: Codable, Hashable, Equatable{
+  var itemId: String
   var cover: String
   var title: String
-  var description: String 
+  var description: String
+  var author: String
+
 }
