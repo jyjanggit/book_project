@@ -3,15 +3,15 @@ import UIKit
 final class SearchListCell: UICollectionViewCell {
   
   
-//  struct ViewModel:  {
-//    var itemId: String
-//    var cover: String
-//    var title: String
-//    var description: String
-//    var author: String
-//  }
+  struct ViewModel: Hashable {
+    var itemId: String
+    var cover: String
+    var title: String
+    var description: String
+    var author: String
+  }
   
-  func configure(viewModel: SearchModel) {
+  func configure(viewModel: ViewModel) {
     //bookID = viewModel.itemId
     titleLabel.text = viewModel.title
     //bookImageView.image = UIImage(named: "Sample2.jpg")
@@ -19,7 +19,7 @@ final class SearchListCell: UICollectionViewCell {
     authorLabel.text = viewModel.author
   }
   
-  let bookImageView: UIImageView = {
+  private let bookImageView: UIImageView = {
     let imageView = UIImageView()
     //imageView.image = UIImage(named: "Sample2.jpg")
     imageView.contentMode = .scaleAspectFill
@@ -27,7 +27,7 @@ final class SearchListCell: UICollectionViewCell {
     return imageView
   }()
   
-  let titleLabel: UILabel = {
+  private let titleLabel: UILabel = {
     let label = UILabel()
     label.applyBoldCommonStyle16()
     label.numberOfLines = 1
@@ -35,14 +35,14 @@ final class SearchListCell: UICollectionViewCell {
     return label
   }()
   
-  let authorLabel: UILabel = {
+  private let authorLabel: UILabel = {
     let label = UILabel()
     label.applyCommonStyle16()
     label.numberOfLines = 1
     return label
   }()
   
-  lazy var textStackView: UIStackView = {
+  private lazy var textStackView: UIStackView = {
     let stack = UIStackView(arrangedSubviews: [titleLabel, authorLabel])
     stack.axis = .vertical
     stack.spacing = 12
@@ -51,7 +51,7 @@ final class SearchListCell: UICollectionViewCell {
     return stack
   }()
   
-  lazy var searchCellStackView: UIStackView = {
+  private lazy var searchCellStackView: UIStackView = {
     let stack = UIStackView(arrangedSubviews: [bookImageView, textStackView])
     stack.axis = .horizontal
     stack.spacing = 12

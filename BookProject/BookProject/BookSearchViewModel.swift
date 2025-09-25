@@ -86,7 +86,7 @@ final class Networking {
         completion(.failure(.dataError))
         return
       }
-            
+      
       // JSON인지 JSONP인지 확인
       let trimmedString = string.trimmingCharacters(in: .whitespacesAndNewlines)
       
@@ -105,7 +105,7 @@ final class Networking {
           string = String(string.dropLast(1))
         }
       }
-            
+      
       guard let cleanData = string.data(using: .utf8) else {
         completion(.failure(.parseError))
         return
@@ -139,29 +139,53 @@ final class Networking {
 
 
 
-
+protocol BookSearchViewModelDelegate: AnyObject {
+  func reloadData(items:[BookSearchViewController.Item])
+}
 
 
 final class BookSearchViewModel {
   
+  weak var delegate: BookSearchViewModelDelegate?
+  
   // 책 데이터
-  var bookSearchList: [BookSearchResult] = []
+  var bookSearchList: [SearchBook] = []
+  var networkManager = Networking.shared
+  
+  func searchBarSearchButtonTapped(query: String) {
+    networkManager.fetchData(searchText: query) { (result: Result<BookResponse, NetworkError>) in
+      switch result {
+      case .success(let bookResponse):
+        self.bookSearchList = bookResponse.item.map{ book in .init(itemId: book.isbn13 ?? "",
+                                                           cover: book.cover ?? "",
+                                                           title: book.title ?? "",
+                                                           description: book.description ?? "",
+                                                           author: book.author ?? "")
+        }
+        self.delegate?.reloadData(items: self.bookSearchResultToSearchModel(bookResponse.item))
+        
+      case .failure(let error):
+        print("검색 실패: \(error.localizedDescription)")
+      }
+    }
+  }
   
   // 변환함수 추가
-  func bookSearchResultToSearchModel(_ bookResults: [BookSearchResult]) -> [SearchModel] {
-    let searchModels = bookResults.map { book in
-      SearchModel(
-        itemId: book.isbn13 ?? "",
-        cover: book.cover ?? "",
-        title: book.title ?? "제목 없음",
-        description: book.description ?? "설명 없음",
-        author: book.author ?? "저자 없음"
+  private func bookSearchResultToSearchModel(_ bookResults: [BookSearchResult]) -> [BookSearchViewController.Item] {
+    return bookResults.map { book in
+      BookSearchViewController.Item(
+        viewModel: SearchListCell.ViewModel(
+          itemId: book.isbn13 ?? "",
+          cover: book.cover ?? "",
+          title: book.title ?? "제목 없음",
+          description: book.description ?? "설명 없음",
+          author: book.author ?? "저자 없음"
+        )
       )
     }
-    return searchModels
   }
   
   
-
+  
 }
 
