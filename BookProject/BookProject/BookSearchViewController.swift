@@ -14,8 +14,8 @@ final class BookSearchViewController: UIViewController {
   private typealias Snapshot = NSDiffableDataSourceSnapshot<Section, Item>
   private enum Section { case main }
   
-  private struct Item: Hashable {
-    let viewModel: SearchModel
+  struct Item: Hashable {
+    let viewModel: SearchListCell.ViewModel
     
     func hash(into hasher: inout Hasher) {
       hasher.combine(viewModel.itemId)
@@ -31,7 +31,7 @@ final class BookSearchViewController: UIViewController {
   
   
   
-  let uISearchController: UISearchController = {
+  private let uISearchController: UISearchController = {
     let uISearchController = UISearchController(searchResultsController: nil)
     uISearchController.obscuresBackgroundDuringPresentation = false
     uISearchController.hidesNavigationBarDuringPresentation = false
@@ -89,40 +89,23 @@ final class BookSearchViewController: UIViewController {
   }
   
   
-  // api
-  var networkManager = Networking.shared
-  // 이거 뷰모델로 안보내도되나? 근데 보내면Item이없는데..
-  func fetchBooks(query: String) {
-    networkManager.fetchData(searchText: query) { (result: Result<BookResponse, NetworkError>) in
-      switch result {
-      case .success(let bookResponse):
-        print("검색 성공: \(query)")
-        
-        DispatchQueue.main.async {
-          self.viewModel.bookSearchList = bookResponse.item
-          let searchModels = self.viewModel.bookSearchResultToSearchModel(bookResponse.item)
-          self.applySnapshot(items: searchModels.map { Item(viewModel: $0) }, animated: true)
-        }
-        
-      case .failure(let error):
-        print("검색 실패: \(error.localizedDescription)")
-      }
-    }
-  }
+  
+  
   
   private func setupDataSource() {
-    dataSource = UICollectionViewDiffableDataSource<Section, Item>( collectionView: collectionView ) { [weak self] collectionView, indexPath, item in
-      guard let cell = collectionView.dequeueReusableCell( withReuseIdentifier: bookSearchCell.bookSearchIdentifier, for: indexPath) as? SearchListCell,
-            let self = self
-      else {
+    dataSource = UICollectionViewDiffableDataSource<
+      Section,
+      Item
+    >(collectionView: collectionView) { collectionView, indexPath, item in
+      guard let cell = collectionView.dequeueReusableCell(
+        withReuseIdentifier: bookSearchCell.bookSearchIdentifier,
+        for: indexPath
+      ) as? SearchListCell else {
         return UICollectionViewCell()
       }
       
-      let bookData = item.viewModel
-      cell.configure(viewModel: bookData)
+      cell.configure(viewModel: item.viewModel)
       return cell
-      
-      
     }
   }
   
@@ -141,6 +124,7 @@ final class BookSearchViewController: UIViewController {
     super.viewDidLoad()
     view.backgroundColor = UIColor(hex: "#FFFFFF")
     self.title = "책 검색"
+    viewModel.delegate = self
     setupCollectionView()
     setupLayout()
     setupDataSource()
@@ -152,8 +136,15 @@ final class BookSearchViewController: UIViewController {
 extension BookSearchViewController: UISearchBarDelegate {
   func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
     guard let query = searchBar.text, !query.isEmpty else { return }
-    fetchBooks(query: query)
+    viewModel.searchBarSearchButtonTapped(query: query)
   }
 }
 
 
+extension BookSearchViewController: BookSearchViewModelDelegate {
+  func reloadData(items: [Item]) {
+    DispatchQueue.main.async {
+      self.applySnapshot(items: items)
+    }
+  }
+}

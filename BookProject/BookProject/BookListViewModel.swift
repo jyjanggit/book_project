@@ -39,12 +39,7 @@ final class BookListViewModel {
     bookToViewModelReloadDelegate()
   }
   
-  
-  // 해당 셀이 어떤 책인지 위치 확인
-  func book(index: Int) -> Book {
-    return books[index]
-  }
-  
+
   private func bookToViewModelReloadDelegate() {
     // 1.Book ->BookListCell.ViewModel로 변환
     let viewModels = books.map { book in BookListCell.ViewModel(
