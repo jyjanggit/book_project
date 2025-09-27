@@ -90,6 +90,8 @@ final class BookListViewController: UIViewController  {
     setupDataSource()
     viewModel.delegate = self
     
+    viewModel.loadBooks()
+    
   }
   
   
@@ -179,7 +181,9 @@ extension BookListViewController: BookListCellDeleteDelegate {
 
 extension BookListViewController: viewModelDelegate {
   func reloadData(books: [BookListCell.ViewModel]) {
-    applySnapshot(items: books.map { Item(viewModel: $0) })
+    DispatchQueue.main.async {
+      self.applySnapshot(items: books.map { Item(viewModel: $0) })
+    }
   }
 }
 

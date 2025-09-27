@@ -88,7 +88,7 @@ final class CoredataManager {
   func deleteBookData(data: BookDataModel, completion: @escaping () -> Void ) {
     // 날짜
     let date = data.createdAt
-    completion()
+    //completion()
     
     if let context = context {
       let request = NSFetchRequest<NSManagedObject>(entityName: self.modelName)
@@ -109,7 +109,7 @@ final class CoredataManager {
         completion()
       }
     }
-    
+    completion()
   }
   
   // 데이터 수정하기
