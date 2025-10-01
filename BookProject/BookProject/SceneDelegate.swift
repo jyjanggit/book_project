@@ -39,7 +39,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     
     bookListNav.tabBarItem = UITabBarItem(tabBarSystemItem: .bookmarks, tag: 0)
+    bookListNav.title = "책 목록"
     bookSearchNav.tabBarItem = UITabBarItem(tabBarSystemItem: .search, tag: 1)
+    bookSearchNav.title = "책 검색"
     
     let tabBarController = UITabBarController()
     tabBarController.viewControllers = [bookListNav, bookSearchNav]

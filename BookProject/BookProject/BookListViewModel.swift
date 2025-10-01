@@ -24,30 +24,20 @@ protocol BookListCellDeleteDelegate: AnyObject {
   func didTapDeleteButton(bookID: String)
 }
 
+protocol BookListRepository: AnyObject {
+  func fetchBooks() -> [Book]
+  func saveBookData(book: Book, completion: @escaping () -> Void)
+  func deleteBookData(data: Book, completion: @escaping () -> Void)
+  func updateBookData(updateData: Book, completion: @escaping () -> Void)
+}
 
-final class BookListViewModel {
+
+final class BookListRepositoryImpl: BookListRepository {
   
-  weak var delegate: viewModelDelegate?
-  let coreDataManager = CoredataManager.shared
-  lazy var bookDataList = coreDataManager.getBookListFromCoreData()
+  private let coreDataManager = CoredataManager.shared
   
-  
-  //private var books: [Book] = []
-  
-  // 데이터 호출(코어데이터에서)
-  func loadBooks() {
-    let coreDataBooks = fetchBooksFromCoreData()
-    let domainBooks = convertToDomainModels(coreDataBooks)
-    let viewModels = convertToViewModels(domainBooks)
-    notifyDelegate(with: viewModels)
-  }
-  
-  private func fetchBooksFromCoreData() -> [BookDataModel] {
-    return coreDataManager.getBookListFromCoreData()
-  }
-  
-  private func convertToDomainModels(_ bookDataList: [BookDataModel]) -> [Book] {
-    return bookDataList.map { bookData in
+  func fetchBooks() -> [Book] {
+    coreDataManager.getBookListFromCoreData().map { bookData in
       Book(
         id: bookData.id,
         bookTitle: bookData.bookTitle,
@@ -55,6 +45,39 @@ final class BookListViewModel {
         currentPage: Int(bookData.currentPage)
       )
     }
+  }
+  
+  
+  func saveBookData(book: Book, completion: @escaping () -> Void) {
+    coreDataManager.saveBookData(book: book, completion: completion)
+  }
+  
+  func updateBookData(updateData: Book, completion: @escaping () -> Void) {
+    coreDataManager.updateBookData(updateData: updateData, completion: completion)
+  }
+  
+  func deleteBookData(data: Book, completion: @escaping () -> Void) {
+    coreDataManager.deleteBookData(data: data, completion: completion)
+  }
+}
+
+
+
+final class BookListViewModel {
+  
+  weak var delegate: viewModelDelegate?
+  private let bookListRepository: BookListRepository
+  private var books: [Book] = []
+  
+  init(bookListRepository: BookListRepository) {
+    self.bookListRepository = bookListRepository
+  }
+  
+  // 데이터 호출(코어데이터에서)
+  func loadBooks() {
+    self.books = bookListRepository.fetchBooks()
+    let viewModels = convertToViewModels(books)
+    notifyDelegate(with: viewModels)
   }
   
   private func convertToViewModels(_ books: [Book]) -> [BookListCell.ViewModel] {
@@ -75,70 +98,48 @@ final class BookListViewModel {
   
   // 책 추가
   func addBookTappedButton(addBook: Book) {
-    coreDataManager.saveBookData(
-      id: addBook.id,
-      bookTitle: addBook.bookTitle,
-      totalPage: Int16(addBook.totalPage),
-      currentPage: Int16(addBook.currentPage),
-      percentage: Double(addBook.percentage)
-    ) { [weak self] in
-      self?.loadBooks()
+    bookListRepository.saveBookData(book: addBook) { [weak self] in
+      guard let self else {
+        return
+      }
+      
+      books.append(addBook)
+      notifyDelegate(with: convertToViewModels(books))
     }
   }
   
-  
-  //  private func bookToViewModelReloadDelegate() {
-  //    // 1.Book ->BookListCell.ViewModel로 변환
-  //    let viewModels = books.map { book in BookListCell.ViewModel(
-  //        id: book.id,
-  //        title: book.bookTitle,
-  //        currentPage: "\(book.currentPage)쪽",
-  //        totalPage: "\(book.totalPage)쪽",
-  //        chartReadValue: book.percentage
-  //    )}
-  //    // 2.변환한 것을 담아서 리로드
-  //    delegate?.reloadData(books: viewModels)
-  //    
-  //    
-  //    
-  //  }
-  
-  
-  
   func findBook(by id: String) -> Book? {
-    // 아이디로 책 찾는 기능
-    if let bookData = bookDataList.firstIndex(where: { $0.id == id }) {
-      return Book(
-        id: bookData.id,
-        bookTitle: bookData.bookTitle,
-        totalPage: Int(bookData.totalPage),
-        currentPage: Int(bookData.currentPage)
-      )
-    }
-    return nil
+    books.first(where: { $0.id == id })
   }
   
   // 책 수정
   func handleTapUpdateButton(updatedBook: Book, bookID: String) {
+    guard let targetIndex = books.firstIndex(where: { $0.id == bookID }) else {
+      return
+    }
     
-    if let targetBookData = bookDataList.firstIndex(where: { $0.id == bookID }) {
-      targetBookData.bookTitle = updatedBook.bookTitle
-      targetBookData.totalPage = Int16(updatedBook.totalPage)
-      targetBookData.currentPage = Int16(updatedBook.currentPage)
-      targetBookData.percentage = Double(updatedBook.percentage)
+    bookListRepository.updateBookData(updateData: updatedBook) { [weak self] in
+      guard let self else {
+        return
+      }
       
-      coreDataManager.updateBookData(updateData: targetBookData) { [weak self] in
-        self?.loadBooks()
-      }
+      self.books[targetIndex] = updatedBook
+      self.notifyDelegate(with: self.convertToViewModels(self.books))
     }
-    
-    // 책 삭제
-    func handleTapDeleteButton(bookID: String) {
-      if let targetBookData = bookDataList.firstIndex(where: { $0.id == bookID }) {
-        coreDataManager.deleteBookData(data: targetBookData) { [weak self] in
-          self?.loadBooks()
-        }
-      }
-    }
-    
   }
+  
+  func handleTapDeleteButton(bookID: String) {
+    guard let targetBookData = books.first(where: { $0.id == bookID }) else {
+      return
+    }
+    
+    bookListRepository.deleteBookData(data: targetBookData) { [weak self] in
+      guard let self else {
+        return
+      }
+      
+      books.removeAll(where: { $0.id == bookID })
+      notifyDelegate(with: convertToViewModels(books))
+    }
+  }
+}

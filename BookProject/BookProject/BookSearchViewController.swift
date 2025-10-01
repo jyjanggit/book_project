@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SnapKit
 
 
 final class BookSearchViewController: UIViewController {
@@ -64,16 +65,12 @@ final class BookSearchViewController: UIViewController {
     
     collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
     collectionView.backgroundColor = UIColor(hex: "#FFFFFF")
-    collectionView.translatesAutoresizingMaskIntoConstraints = false
     
     view.addSubview(collectionView)
     
-    NSLayoutConstraint.activate([
-      collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-      collectionView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-      collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-      collectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor)
-    ])
+    collectionView.snp.makeConstraints { make in
+      make.edges.equalTo(view.safeAreaLayoutGuide)
+    }
     
     collectionView.register(SearchListCell.self, forCellWithReuseIdentifier: "SearchListCell")
   }

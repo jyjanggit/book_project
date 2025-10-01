@@ -1,4 +1,5 @@
 import UIKit
+import SnapKit
 
 final class BookListViewController: UIViewController  {
   
@@ -29,7 +30,7 @@ final class BookListViewController: UIViewController  {
   
   
   private var collectionView: UICollectionView!
-  private var viewModel = BookListViewModel()
+  private var viewModel = BookListViewModel(bookListRepository: BookListRepositoryImpl() )
   
   // MARK: - ui
   private func setupCollectionView() {
@@ -56,19 +57,15 @@ final class BookListViewController: UIViewController  {
     
     collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
     collectionView.backgroundColor = UIColor(hex: "#FFFFFF")
-    collectionView.translatesAutoresizingMaskIntoConstraints = false
     
     //collectionView.delegate = self
     //collectionView.dataSource = self
     
     view.addSubview(collectionView)
     
-    NSLayoutConstraint.activate([
-      collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-      collectionView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-      collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-      collectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor)
-    ])
+    collectionView.snp.makeConstraints { make in
+      make.edges.equalTo(view.safeAreaLayoutGuide)
+    }
     
     collectionView.register(BookListCell.self, forCellWithReuseIdentifier: bookListCell.bookListIdentifier)
   }
@@ -84,7 +81,6 @@ final class BookListViewController: UIViewController  {
     super.viewDidLoad()
     view.backgroundColor = UIColor(hex: "#FFFFFF")
     self.title = "책 목록"
-    
     naviButton()
     setupCollectionView()
     setupDataSource()

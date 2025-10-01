@@ -1,4 +1,5 @@
 import UIKit
+import SnapKit
 
 final class SearchListCell: UICollectionViewCell {
   
@@ -66,20 +67,22 @@ final class SearchListCell: UICollectionViewCell {
     contentView.addSubview(searchCellStackView)
     
     
-    searchCellStackView.translatesAutoresizingMaskIntoConstraints = false
-  
+    searchCellStackView.snp.makeConstraints { make in
+      make.top.equalToSuperview().offset(16)
+      make.leading.equalToSuperview().offset(16)
+      make.bottom.equalToSuperview().offset(-16)
+      make.trailing.equalToSuperview().offset(-16)
+    }
     
-    NSLayoutConstraint.activate([
-      searchCellStackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 16),
-      searchCellStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-      searchCellStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16),
-      searchCellStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-      
-      bookImageView.widthAnchor.constraint(equalToConstant: 60),
-      bookImageView.heightAnchor.constraint(equalToConstant: 85),
-      
-      textStackView.leadingAnchor.constraint(equalTo: bookImageView.trailingAnchor, constant: 16)
-    ])
+    bookImageView.snp.makeConstraints { make in
+      make.width.equalTo(60)
+      make.height.equalTo(85)
+    }
+    
+    textStackView.snp.makeConstraints { make in
+      make.leading.equalTo(bookImageView.snp.trailing).offset(16)
+    }
+    
   }
   
   override init(frame: CGRect) {
@@ -121,6 +124,7 @@ extension UIImageView {
     
     URLSession.shared.dataTask(with: url) { data, _, _ in
       if let data = data, let image = UIImage(data: data) {
+        // 이미지를 받았다가 메인스레드로 다시 보내야함
         DispatchQueue.main.async {
           self.image = image
         }
