@@ -1,4 +1,5 @@
 import UIKit
+import SnapKit
 
 final class BookListViewController: UIViewController  {
   
@@ -29,7 +30,7 @@ final class BookListViewController: UIViewController  {
   
   
   private var collectionView: UICollectionView!
-  private var viewModel = BookListViewModel()
+  private var viewModel = BookListViewModel(bookListRepository: BookListRepositoryImpl() )
   
   // MARK: - ui
   private func setupCollectionView() {
@@ -56,21 +57,17 @@ final class BookListViewController: UIViewController  {
     
     collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
     collectionView.backgroundColor = UIColor(hex: "#FFFFFF")
-    collectionView.translatesAutoresizingMaskIntoConstraints = false
     
     //collectionView.delegate = self
     //collectionView.dataSource = self
     
     view.addSubview(collectionView)
     
-    NSLayoutConstraint.activate([
-      collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-      collectionView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-      collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-      collectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor)
-    ])
+    collectionView.snp.makeConstraints { make in
+      make.edges.equalTo(view.safeAreaLayoutGuide)
+    }
     
-    collectionView.register(BookListCell.self, forCellWithReuseIdentifier: bookListCell.bookListIdentifier)
+    collectionView.register(BookListCell.self, forCellWithReuseIdentifier: BookListCellConstants.bookListIdentifier)
   }
   
   private func naviButton() {
@@ -84,11 +81,12 @@ final class BookListViewController: UIViewController  {
     super.viewDidLoad()
     view.backgroundColor = UIColor(hex: "#FFFFFF")
     self.title = "책 목록"
-    
     naviButton()
     setupCollectionView()
     setupDataSource()
     viewModel.delegate = self
+    
+    viewModel.loadBooks()
     
   }
   
@@ -96,7 +94,7 @@ final class BookListViewController: UIViewController  {
   
   private func setupDataSource() {
     dataSource = UICollectionViewDiffableDataSource<Section, Item>( collectionView: collectionView ) { [weak self] collectionView, indexPath, item in
-      guard let cell = collectionView.dequeueReusableCell( withReuseIdentifier: bookListCell.bookListIdentifier, for: indexPath) as? BookListCell,
+      guard let cell = collectionView.dequeueReusableCell( withReuseIdentifier: BookListCellConstants.bookListIdentifier, for: indexPath) as? BookListCell,
             let self = self
       else {
         return UICollectionViewCell()
@@ -177,9 +175,13 @@ extension BookListViewController: BookListCellDeleteDelegate {
 }
 
 
+
+
 extension BookListViewController: viewModelDelegate {
   func reloadData(books: [BookListCell.ViewModel]) {
-    applySnapshot(items: books.map { Item(viewModel: $0) })
+    DispatchQueue.main.async {
+      self.applySnapshot(items: books.map { Item(viewModel: $0) })
+    }
   }
 }
 

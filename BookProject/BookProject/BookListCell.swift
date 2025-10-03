@@ -1,4 +1,5 @@
 import UIKit
+import SnapKit
 
 // MARK: - 반원 차트
 final class ChartView: UIView {
@@ -163,41 +164,34 @@ final class BookListCell: UICollectionViewCell {
     chartParentsView.addSubview(chartView)
     chartParentsView.addSubview(bookImageView)
     
-    titleLabel.translatesAutoresizingMaskIntoConstraints = false
-    containerView.translatesAutoresizingMaskIntoConstraints = false
-    mainStackView.translatesAutoresizingMaskIntoConstraints = false
-    chartParentsView.translatesAutoresizingMaskIntoConstraints = false
-    chartView.translatesAutoresizingMaskIntoConstraints = false
-    bookImageView.translatesAutoresizingMaskIntoConstraints = false
-    
-    NSLayoutConstraint.activate([
-      titleLabel.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 16),
-      titleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
-      titleLabel.bottomAnchor.constraint(equalTo: mainStackView.topAnchor, constant: -16),
-      titleLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
-      
-      containerView.topAnchor.constraint(equalTo: contentView.topAnchor),
-      containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-      containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-      containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-      
-      mainStackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -16),
-      mainStackView.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
-      
-      chartParentsView.widthAnchor.constraint(equalToConstant: 250),
-      chartParentsView.heightAnchor.constraint(equalToConstant: 125),
-      chartParentsView.centerXAnchor.constraint(equalTo: mainStackView.centerXAnchor),
-      
-      chartView.topAnchor.constraint(equalTo: chartParentsView.topAnchor),
-      chartView.leadingAnchor.constraint(equalTo: chartParentsView.leadingAnchor),
-      chartView.bottomAnchor.constraint(equalTo: chartParentsView.bottomAnchor),
-      chartView.trailingAnchor.constraint(equalTo: chartParentsView.trailingAnchor),
-      
-      bookImageView.widthAnchor.constraint(equalToConstant: 40),
-      bookImageView.heightAnchor.constraint(equalToConstant: 40),
-      bookImageView.bottomAnchor.constraint(equalTo: chartParentsView.bottomAnchor),
-      bookImageView.centerXAnchor.constraint(equalTo: chartParentsView.centerXAnchor)
-    ])
+    titleLabel.snp.makeConstraints { make in
+      make.top.leading.trailing.equalToSuperview().inset(16)
+      make.bottom.equalTo(mainStackView.snp.top).offset(-16)
+    }
+
+    containerView.snp.makeConstraints { make in
+      make.edges.equalToSuperview()
+    }
+
+    mainStackView.snp.makeConstraints { make in
+      make.bottom.equalToSuperview().inset(16)
+      make.centerX.equalToSuperview()
+    }
+
+    chartParentsView.snp.makeConstraints { make in
+      make.size.equalTo(CGSize(width: 250, height: 125))
+      make.centerX.equalToSuperview()
+    }
+
+    chartView.snp.makeConstraints { make in
+      make.edges.equalToSuperview()
+    }
+
+    bookImageView.snp.makeConstraints { make in
+      make.size.equalTo(CGSize(width: 40, height: 40))
+      make.bottom.centerX.equalToSuperview()
+    }
+
   }
   
   override init(frame: CGRect) {

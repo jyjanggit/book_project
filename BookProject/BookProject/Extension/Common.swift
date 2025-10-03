@@ -38,7 +38,7 @@ extension UILabel {
 extension UIButton {
   func applyButton() {
     self.setTitleColor(UIColor(hex: "#ffffff"), for: .normal)
-    self.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
+    self.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
     self.layer.cornerRadius = 8
     self.clipsToBounds = true
   }
