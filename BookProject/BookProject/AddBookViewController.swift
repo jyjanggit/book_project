@@ -1,4 +1,5 @@
 import UIKit
+import SnapKit
 
 class AddBookViewController: UIViewController {
   
@@ -42,13 +43,11 @@ class AddBookViewController: UIViewController {
   private func setupLayout() {
     view.addSubview(textFieldStackView)
     
-    textFieldStackView.translatesAutoresizingMaskIntoConstraints = false
-    
-    NSLayoutConstraint.activate([
-      textFieldStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
-      textFieldStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-      textFieldStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
-    ])
+    textFieldStackView.snp.makeConstraints { make in
+      make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
+      make.leading.equalTo(view).offset(16)
+      make.trailing.equalTo(view).inset(16)
+    }
   }
   
   private func naviButton() {
@@ -81,7 +80,7 @@ class AddBookViewController: UIViewController {
     setupLayout()
   }
   
-
+  
   
   // MARK: - 버튼동작
   @objc private func cancelTapped() {

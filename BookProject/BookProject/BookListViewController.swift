@@ -67,7 +67,7 @@ final class BookListViewController: UIViewController  {
       make.edges.equalTo(view.safeAreaLayoutGuide)
     }
     
-    collectionView.register(BookListCell.self, forCellWithReuseIdentifier: bookListCell.bookListIdentifier)
+    collectionView.register(BookListCell.self, forCellWithReuseIdentifier: BookListCellConstants.bookListIdentifier)
   }
   
   private func naviButton() {
@@ -94,7 +94,7 @@ final class BookListViewController: UIViewController  {
   
   private func setupDataSource() {
     dataSource = UICollectionViewDiffableDataSource<Section, Item>( collectionView: collectionView ) { [weak self] collectionView, indexPath, item in
-      guard let cell = collectionView.dequeueReusableCell( withReuseIdentifier: bookListCell.bookListIdentifier, for: indexPath) as? BookListCell,
+      guard let cell = collectionView.dequeueReusableCell( withReuseIdentifier: BookListCellConstants.bookListIdentifier, for: indexPath) as? BookListCell,
             let self = self
       else {
         return UICollectionViewCell()
@@ -173,6 +173,8 @@ extension BookListViewController: BookListCellDeleteDelegate {
     self.viewModel.handleTapDeleteButton(bookID: bookID)
   }
 }
+
+
 
 
 extension BookListViewController: viewModelDelegate {

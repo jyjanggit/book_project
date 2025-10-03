@@ -9,7 +9,7 @@ import UIKit
 
 
 
-public struct bookListCell {
+public struct BookListCellConstants {
   static let bookListIdentifier = "BookListCell"
   private init() {}
 }
@@ -19,8 +19,12 @@ public enum BookApi {
 
 }
 
-public struct bookSearchCell {
+public struct BookSearchCellConstants {
   static let bookSearchIdentifier = "SearchListCell"
   private init() {}
 }
 
+public struct BookPictureCellConstants {
+  static let bookPictureIdentifier = "PictureListCell"
+  private init() {}
+}

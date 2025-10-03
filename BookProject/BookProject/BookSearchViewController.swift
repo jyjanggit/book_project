@@ -95,7 +95,7 @@ final class BookSearchViewController: UIViewController {
       Item
     >(collectionView: collectionView) { collectionView, indexPath, item in
       guard let cell = collectionView.dequeueReusableCell(
-        withReuseIdentifier: bookSearchCell.bookSearchIdentifier,
+        withReuseIdentifier: BookSearchCellConstants.bookSearchIdentifier,
         for: indexPath
       ) as? SearchListCell else {
         return UICollectionViewCell()

@@ -23,9 +23,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     let bookListVC = BookListViewController()
     let bookSearchVC = BookSearchViewController()
+    let bookPictureVC = BookPictureViewController()
     
     let bookListNav = UINavigationController(rootViewController: bookListVC)
     let bookSearchNav = UINavigationController(rootViewController: bookSearchVC)
+    let bookPictureNav  = UINavigationController(rootViewController: bookPictureVC)
     
     let appearance = UINavigationBarAppearance()
     appearance.configureWithDefaultBackground()
@@ -36,15 +38,21 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     bookListNav.navigationBar.standardAppearance = appearance
     bookSearchNav.navigationBar.standardAppearance = appearance
+    bookPictureNav.navigationBar.standardAppearance = appearance
     
+    let pictureImage = UIImage(systemName: "photo.stack")
+
     
     bookListNav.tabBarItem = UITabBarItem(tabBarSystemItem: .bookmarks, tag: 0)
     bookListNav.title = "책 목록"
+    
     bookSearchNav.tabBarItem = UITabBarItem(tabBarSystemItem: .search, tag: 1)
     bookSearchNav.title = "책 검색"
     
+    bookPictureNav.tabBarItem = UITabBarItem(title: "책 구절", image: pictureImage , tag: 2)
+    
     let tabBarController = UITabBarController()
-    tabBarController.viewControllers = [bookListNav, bookSearchNav]
+    tabBarController.viewControllers = [bookListNav, bookSearchNav, bookPictureNav]
     
     window?.rootViewController = tabBarController
     window?.makeKeyAndVisible()
