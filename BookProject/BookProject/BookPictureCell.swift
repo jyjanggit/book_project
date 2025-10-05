@@ -6,12 +6,12 @@
 //
 
 import UIKit
+import SnapKit
 
 final class BookPictureCell: UICollectionViewCell {
   
   private let bookPictureImage: UIImageView = {
     let imageView = UIImageView()
-    imageView.image = UIImage(named: "Sample2.jpg")
     imageView.contentMode = .scaleAspectFill
     imageView.clipsToBounds = true
     return imageView
@@ -33,6 +33,17 @@ final class BookPictureCell: UICollectionViewCell {
     bookPictureImage.snp.makeConstraints { make in
       make.edges.equalToSuperview()
     }
+  }
+  
+  struct ViewModel: Equatable {
+    let id: String
+    let image: UIImage
+    let memo: String
+    let date: String
+  }
+  
+  func configure(viewModel: ViewModel) {
+    bookPictureImage.image = viewModel.image
   }
   
 }

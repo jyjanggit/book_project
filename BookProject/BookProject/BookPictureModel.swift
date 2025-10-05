@@ -6,10 +6,11 @@
 //
 
 import Foundation
+import UIKit
 
 struct BookPictureModel {
   var id: String
   var memo: String
-  var booktTextpicture: String
+  var booktTextpicture: UIImage
   var date: Date
 }
