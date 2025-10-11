@@ -1,6 +1,6 @@
 import Foundation
 
-struct SearchBook {
+struct BookSearchModel {
   var itemId: String
   var cover: String
   var title: String

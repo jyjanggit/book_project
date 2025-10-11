@@ -16,7 +16,7 @@ final class BookSearchViewController: UIViewController {
   private enum Section { case main }
   
   struct Item: Hashable {
-    let viewModel: SearchListCell.ViewModel
+    let viewModel: BookSearchCell.ViewModel
     
     func hash(into hasher: inout Hasher) {
       hasher.combine(viewModel.itemId)
@@ -72,7 +72,7 @@ final class BookSearchViewController: UIViewController {
       make.edges.equalTo(view.safeAreaLayoutGuide)
     }
     
-    collectionView.register(SearchListCell.self, forCellWithReuseIdentifier: "SearchListCell")
+    collectionView.register(BookSearchCell.self, forCellWithReuseIdentifier: "SearchListCell")
   }
   
   private func setupLayout() {
@@ -97,7 +97,7 @@ final class BookSearchViewController: UIViewController {
       guard let cell = collectionView.dequeueReusableCell(
         withReuseIdentifier: BookSearchCellConstants.bookSearchIdentifier,
         for: indexPath
-      ) as? SearchListCell else {
+      ) as? BookSearchCell else {
         return UICollectionViewCell()
       }
       

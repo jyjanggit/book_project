@@ -1,14 +1,10 @@
-//
-//  BookPictureDetailViewController.swift
-//  BookProject
-//
-//  Created by JY Jang on 10/3/25.
-//
-
 import UIKit
 import SnapKit
 
 final class BookPictureDetailViewController: UIViewController {
+  
+  var pictureID: String?
+  var viewModel: BookPictureViewModel?
   
   private let scrollView = UIScrollView()
   
@@ -22,7 +18,6 @@ final class BookPictureDetailViewController: UIViewController {
   
   private let memoLabel: UILabel = {
     let label = UILabel()
-    label.text = "메모하거나 제목을 쓰거나 둘중하나 하시면 됩니다 아마 제목쓰거나 이북이면 캡처할때 제목도 나오니까 상관없을듯 메모하거나 제목을 쓰거나 둘중하나 하시면 됩니다 아마 제목쓰거나 이북이면 캡처할때 제목도 나오니까 상관없을듯메모하거나 제목을 쓰거나 둘중하나 하시면 됩니다 아마 제목쓰거나 이북이면 캡처할때 제목도 나오니까 상관없을듯"
     label.numberOfLines = 0
     label.lineBreakMode = .byWordWrapping
     label.applyBoldCommonStyle()
@@ -32,7 +27,6 @@ final class BookPictureDetailViewController: UIViewController {
   
   private let dateLabel: UILabel = {
     let label = UILabel()
-    label.text = "2025-02-24"
     label.numberOfLines = 1
     label.applyCommonStyle16()
     label.textAlignment = .left
@@ -61,7 +55,21 @@ final class BookPictureDetailViewController: UIViewController {
     
     setupLayout()
     setupNavigationBar()
+    loadPictureData()
+  }
+  
+  private func loadPictureData() {
+    guard let pictureID = pictureID,
+          let picture = viewModel?.findPicture(by: pictureID) else {
+      return
+    }
     
+    imageView.image = picture.booktTextpicture
+    memoLabel.text = picture.memo
+    
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy-MM-dd"
+    dateLabel.text = formatter.string(from: picture.date)
   }
   
   private func setupLayout() {
@@ -79,12 +87,9 @@ final class BookPictureDetailViewController: UIViewController {
       make.bottom.equalTo(scrollView.contentLayoutGuide.snp.bottom).offset(-16)
     }
     
-
     imageView.snp.makeConstraints { make in
       make.height.equalTo(imageView.snp.width)
     }
-    
-
   }
   
   private func setupNavigationBar() {
@@ -115,7 +120,6 @@ final class BookPictureDetailViewController: UIViewController {
       style: .destructive
     ) { _ in
       self.pictureDeleteButtonTapped()
-      
     }
     
     let cancelAction = UIAlertAction(
@@ -123,27 +127,54 @@ final class BookPictureDetailViewController: UIViewController {
       style: .cancel
     )
     
-    alert.addAction(editAction)  // 수정
-    alert.addAction(deleteAction)  // 삭제
-    alert.addAction(cancelAction)  // 취소
+    alert.addAction(editAction)
+    alert.addAction(deleteAction)
+    alert.addAction(cancelAction)
     
     present(alert, animated: true)
   }
   
-
-  
   @objc private func pictureUpdateButtonTapped() {
-
+    guard let pictureID = pictureID,
+          let picture = viewModel?.findPicture(by: pictureID) else {
+      return
+    }
+    
+    let addBookPictureVC = AddBookPictureViewController()
+    addBookPictureVC.delegate = self
+    addBookPictureVC.pictureEdit = picture
+    addBookPictureVC.pictureID = pictureID
+    
+    let navVC = UINavigationController(rootViewController: addBookPictureVC)
+    present(navVC, animated: true)
   }
   
   @objc private func pictureDeleteButtonTapped() {
-
+    guard let pictureID = pictureID else { return }
     
+    let alert = UIAlertController(
+      title: "삭제",
+      message: "정말 삭제하시겠습니까?",
+      preferredStyle: .alert
+    )
+    
+    alert.addAction(UIAlertAction(title: "취소", style: .cancel))
+    alert.addAction(UIAlertAction(title: "삭제", style: .destructive) { _ in
+      self.viewModel?.handleTapDeleteButton(pictureID: pictureID)
+      self.navigationController?.popViewController(animated: true)
+    })
+    
+    present(alert, animated: true)
   }
-  
-  
-  
 }
 
-
-
+extension BookPictureDetailViewController: AddBookPictureViewControllerDelegate {
+  func addBookPictureTappedButton(_ vc: AddBookPictureViewController, didAdd picture: BookPictureModel) {
+    // 사용 안 함
+  }
+  
+  func updateBookPictureTappedButton(_ vc: AddBookPictureViewController, didUpdate picture: BookPictureModel, pictureID: String) {
+    viewModel?.handleTapUpdateButton(updatedPicture: picture, pictureID: pictureID)
+    loadPictureData()
+  }
+}

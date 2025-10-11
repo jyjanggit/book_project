@@ -1,7 +1,7 @@
 import UIKit
 import SnapKit
 
-final class SearchListCell: UICollectionViewCell {
+final class BookSearchCell: UICollectionViewCell {
   
   
   struct ViewModel: Hashable {

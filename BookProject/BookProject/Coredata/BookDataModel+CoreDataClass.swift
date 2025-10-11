@@ -13,3 +13,7 @@ import CoreData
 public class BookDataModel: NSManagedObject {
 
 }
+@objc(BookPictureDataModel)
+public class BookPictureDataModel: NSManagedObject {
+
+}

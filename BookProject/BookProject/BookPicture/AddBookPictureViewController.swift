@@ -1,24 +1,20 @@
-//
-//  AddBookPictureViewController.swift
-//  BookProject
-//
-//  Created by JY Jang on 10/3/25.
-//
-
 import UIKit
 import SnapKit
 
-class AddBookPictureViewController: UIViewController {
-  //weak var delegate: AddBookViewControllerDelegate?
+final class AddBookPictureViewController: UIViewController {
   
-  var bookEdit: Book?
-  var bookID: String?
+  weak var delegate: AddBookPictureViewControllerDelegate?
+  
+  var pictureEdit: BookPictureModel?
+  var pictureID: String?
+  var selectedImage: UIImage?
   
   private let imageView: UIImageView = {
     let imageView = UIImageView()
     imageView.contentMode = .scaleAspectFill
     imageView.clipsToBounds = true
     imageView.backgroundColor = .systemGray5
+    imageView.isUserInteractionEnabled = true
     return imageView
   }()
   
@@ -71,8 +67,6 @@ class AddBookPictureViewController: UIViewController {
     }
   }
   
-  
-  
   private func naviButton() {
     navigationItem.leftBarButtonItem = UIBarButtonItem(
       title: "취소",
@@ -88,19 +82,36 @@ class AddBookPictureViewController: UIViewController {
     )
   }
   
-  
   override func viewDidLoad() {
     super.viewDidLoad()
     
     view.backgroundColor = UIColor(hex: "#FFFFFF")
-    self.title = bookEdit == nil ? "책 추가" : "책 수정"
+    self.title = pictureEdit == nil ? "책 구절 추가" : "책 구절 수정"
     
-    if let editBook = bookEdit {
-      memoTextField.text = editBook.bookTitle
+    if let editPicture = pictureEdit {
+      imageView.image = editPicture.booktTextpicture
+      selectedImage = editPicture.booktTextpicture
+      memoTextField.text = editPicture.memo
     }
+    
+    photoButton.addTarget(self, action: #selector(photoButtonTapped), for: .touchUpInside)
+    
+    let tapGesture = UITapGestureRecognizer(target: self, action: #selector(imageViewTapped))
+    imageView.addGestureRecognizer(tapGesture)
     
     naviButton()
     setupLayout()
+  }
+  
+  @objc private func imageViewTapped() {
+    photoButtonTapped()
+  }
+  
+  @objc private func photoButtonTapped() {
+    let picker = UIImagePickerController()
+    picker.delegate = self
+    picker.sourceType = .photoLibrary
+    present(picker, animated: true)
   }
   
   @objc private func cancelTapped() {
@@ -108,29 +119,42 @@ class AddBookPictureViewController: UIViewController {
   }
   
   @objc private func saveTapped() {
+    guard let image = selectedImage else {
+      showAlert(message: "이미지를 선택해주세요")
+      return
+    }
     
+    let memo = memoTextField.text ?? ""
     
-//    guard let title = titleTextField.text, !title.isEmpty,
-//          let totalText = totalTextField.text, let total = Int(totalText),
-//          let currentText = currentTextField.text, let current = Int(currentText) else
-//    {
-//      return
-//    }
-//    
-
+    let picture = BookPictureModel(
+      id: pictureID ?? UUID().uuidString,
+      memo: memo,
+      booktTextpicture: image,
+      date: Date()
+    )
     
-//    let book = Book(id: bookID ?? UUID().uuidString, bookTitle: title, totalPage: total, currentPage: current)
-//    
-//    if let bookID = bookID {
-//      delegate?.updateBookTappedButton(self, didUpdate: book, bookID: bookID)
-//    } else {
-//      delegate?.addBookTappedButton(self, didAdd: book)
-//    }
+    if let pictureID = pictureID {
+      delegate?.updateBookPictureTappedButton(self, didUpdate: picture, pictureID: pictureID)
+    } else {
+      delegate?.addBookPictureTappedButton(self, didAdd: picture)
+    }
+    
     dismiss(animated: true)
   }
   
-  
-  
-  
-  
+  private func showAlert(message: String) {
+    let alert = UIAlertController(title: "알림", message: message, preferredStyle: .alert)
+    alert.addAction(UIAlertAction(title: "확인", style: .default))
+    present(alert, animated: true)
+  }
+}
+
+extension AddBookPictureViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+  func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+    if let image = info[.originalImage] as? UIImage {
+      imageView.image = image
+      selectedImage = image
+    }
+    picker.dismiss(animated: true)
+  }
 }

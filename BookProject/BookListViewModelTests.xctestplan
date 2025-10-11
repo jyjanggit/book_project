@@ -1,0 +1,37 @@
+{
+  "configurations" : [
+    {
+      "id" : "B4D48209-BA6B-4107-91A3-98CAF9B65CD7",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:BookProject.xcodeproj",
+      "identifier" : "F252EF3B2E421F39000F38D4",
+      "name" : "BookProject"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:BookProject.xcodeproj",
+        "identifier" : "F224D6A62E9A4A8B0094EC2C",
+        "name" : "BookListViewModelTests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:BookProject.xcodeproj",
+        "identifier" : "F224D6B32E9A4AC10094EC2C",
+        "name" : "BookPictureViewModelTests"
+      }
+    }
+  ],
+  "version" : 1
+}
