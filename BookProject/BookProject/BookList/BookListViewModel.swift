@@ -128,6 +128,7 @@ final class BookListViewModel {
     }
   }
   
+  // 책 삭제
   func handleTapDeleteButton(bookID: String) {
     guard let targetBookData = books.first(where: { $0.id == bookID }) else {
       return
