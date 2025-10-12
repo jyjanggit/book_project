@@ -70,7 +70,7 @@ final class BookListCell: UICollectionViewCell {
   
   
   // MARK: - ui
-  let titleLabel: UILabel = {
+  private let titleLabel: UILabel = {
     let label = UILabel()
     label.numberOfLines = 1
     label.lineBreakMode = .byTruncatingTail
@@ -80,31 +80,31 @@ final class BookListCell: UICollectionViewCell {
     return label
   }()
   
-  let chartView: ChartView = {
+  private let chartView: ChartView = {
     let view = ChartView()
     view.accessibilityLabel = "독서 진행률 그래프입니다."
     return view
   }()
   
-  let bookImageView: UIImageView = {
+  private let bookImageView: UIImageView = {
     UIImageView(image: UIImage(systemName: "book"))
   }()
   
-  let chartParentsView: UIView = UIView()
+  private let chartParentsView: UIView = UIView()
   
-  let currentPageLabel: UILabel = {
+  private let currentPageLabel: UILabel = {
     let label = UILabel()
     label.applyBoldCommonStyle()
     return label
   }()
   
-  let totalPageLabel: UILabel = {
+  private let totalPageLabel: UILabel = {
     let label = UILabel()
     label.applyCommonStyle()
     return label
   }()
   
-  let updateButton: UIButton = {
+  private let updateButton: UIButton = {
     let button = UIButton(type: .system)
     button.setTitle("수정", for: .normal)
     button.backgroundColor = UIColor(hex: "#7598fe")
@@ -113,7 +113,7 @@ final class BookListCell: UICollectionViewCell {
     return button
   }()
   
-  let deleteButton: UIButton = {
+  private let deleteButton: UIButton = {
     let button = UIButton(type: .system)
     button.setTitle("삭제", for: .normal)
     button.backgroundColor = UIColor(hex: "#FF6961")
@@ -122,7 +122,7 @@ final class BookListCell: UICollectionViewCell {
     return button
   }()
   
-  lazy var pageStackView: UIStackView = {
+  private lazy var pageStackView: UIStackView = {
     let stack = UIStackView(arrangedSubviews: [currentPageLabel, totalPageLabel])
     stack.axis = .horizontal
     stack.spacing = 0
@@ -131,7 +131,7 @@ final class BookListCell: UICollectionViewCell {
     return stack
   }()
   
-  lazy var buttonStackView: UIStackView = {
+  private lazy var buttonStackView: UIStackView = {
     let stack = UIStackView(arrangedSubviews: [updateButton, deleteButton])
     stack.axis = .horizontal
     stack.spacing = 5
@@ -140,7 +140,7 @@ final class BookListCell: UICollectionViewCell {
     return stack
   }()
   
-  lazy var mainStackView: UIStackView = {
+  private lazy var mainStackView: UIStackView = {
     let stack = UIStackView(arrangedSubviews: [chartParentsView, pageStackView, buttonStackView])
     stack.axis = .vertical
     stack.spacing = 20

@@ -1,7 +1,7 @@
 import UIKit
 import SnapKit
 
-class AddBookViewController: UIViewController {
+final class AddBookViewController: UIViewController {
   
   weak var delegate: AddBookViewControllerDelegate?
   
@@ -9,7 +9,7 @@ class AddBookViewController: UIViewController {
   var bookID: String?
   
   // MARK: - ui
-  let titleTextField: UITextField = {
+  private let titleTextField: UITextField = {
     let text = UITextField()
     text.placeholder = "책 제목을 입력하세요"
     text.applyUITextField()
@@ -17,7 +17,7 @@ class AddBookViewController: UIViewController {
     return text
   }()
   
-  let totalTextField: UITextField = {
+  private let totalTextField: UITextField = {
     let text = UITextField()
     text.placeholder = "책의 총 페이지수"
     text.keyboardType = .numberPad
@@ -27,7 +27,7 @@ class AddBookViewController: UIViewController {
     return text
   }()
   
-  let currentTextField: UITextField = {
+  private let currentTextField: UITextField = {
     let text = UITextField()
     text.placeholder = "책의 현재 페이지수"
     text.keyboardType = .numberPad
@@ -37,7 +37,7 @@ class AddBookViewController: UIViewController {
     return text
   }()
   
-  lazy var textFieldStackView: UIStackView = {
+  private lazy var textFieldStackView: UIStackView = {
     let stack = UIStackView(arrangedSubviews: [titleTextField, totalTextField, currentTextField])
     stack.axis = .vertical
     stack.spacing = 20

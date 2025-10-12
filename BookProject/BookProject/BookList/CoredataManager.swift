@@ -15,13 +15,13 @@ final class CoredataManager {
   // 싱글톤 객체
   
   // 앱델리게이트
-  let appDelegate = UIApplication.shared.delegate as? AppDelegate
+  private let appDelegate = UIApplication.shared.delegate as? AppDelegate
   
   // 임시 저장
-  lazy var context = appDelegate?.persistentContainer.viewContext
+  private lazy var context = appDelegate?.persistentContainer.viewContext
   
   // 엔티티 이름
-  let modelName: String = "BookDataModel"
+  private let modelName: String = "BookDataModel"
   
   // 코어데이터 저장 데이터 읽어오기
   func getBookListFromCoreData() -> [BookDataModel] {
