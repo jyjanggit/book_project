@@ -7,6 +7,8 @@ final class ChartView: UIView {
   var readValue = CGFloat() {
     didSet {
       chart()
+      self.isAccessibilityElement = true
+      self.accessibilityValue = "\(Int(readValue))퍼센트 읽음"
     }
   }
   
@@ -74,11 +76,13 @@ final class BookListCell: UICollectionViewCell {
     label.lineBreakMode = .byTruncatingTail
     label.textAlignment = .center
     label.applyBoldCommonStyle()
+    label.accessibilityTraits = .header
     return label
   }()
   
   let chartView: ChartView = {
     let view = ChartView()
+    view.accessibilityLabel = "독서 진행률 그래프입니다."
     return view
   }()
   
@@ -105,6 +109,7 @@ final class BookListCell: UICollectionViewCell {
     button.setTitle("수정", for: .normal)
     button.backgroundColor = UIColor(hex: "#7598fe")
     button.applyButton()
+    button.accessibilityHint = "내용을 수정 할 수 있습니다."
     return button
   }()
   
@@ -113,6 +118,7 @@ final class BookListCell: UICollectionViewCell {
     button.setTitle("삭제", for: .normal)
     button.backgroundColor = UIColor(hex: "#FF6961")
     button.applyButton()
+    button.accessibilityHint = "내용을 삭제 할 수 있습니다."
     return button
   }()
   
@@ -168,30 +174,30 @@ final class BookListCell: UICollectionViewCell {
       make.top.leading.trailing.equalToSuperview().inset(16)
       make.bottom.equalTo(mainStackView.snp.top).offset(-16)
     }
-
+    
     containerView.snp.makeConstraints { make in
       make.edges.equalToSuperview()
     }
-
+    
     mainStackView.snp.makeConstraints { make in
       make.bottom.equalToSuperview().inset(16)
       make.centerX.equalToSuperview()
     }
-
+    
     chartParentsView.snp.makeConstraints { make in
       make.size.equalTo(CGSize(width: 250, height: 125))
       make.centerX.equalToSuperview()
     }
-
+    
     chartView.snp.makeConstraints { make in
       make.edges.equalToSuperview()
     }
-
+    
     bookImageView.snp.makeConstraints { make in
       make.size.equalTo(CGSize(width: 40, height: 40))
       make.bottom.centerX.equalToSuperview()
     }
-
+    
   }
   
   override init(frame: CGRect) {
@@ -213,7 +219,7 @@ final class BookListCell: UICollectionViewCell {
   var bookID: String?
   
   struct ViewModel: Equatable {
-
+    
     let id: String
     let title: String
     let currentPage: String
@@ -228,7 +234,9 @@ final class BookListCell: UICollectionViewCell {
     bookID = viewModel.id
     titleLabel.text = viewModel.title
     currentPageLabel.text = viewModel.currentPage
+    currentPageLabel.accessibilityLabel = "현재 읽은 페이지: \(viewModel.currentPage) 페이지"
     totalPageLabel.text = viewModel.totalPage
+    totalPageLabel.accessibilityLabel = "책의 총 페이지: \(viewModel.totalPage) 페이지"
     chartView.readValue = viewModel.chartReadValue
   }
   

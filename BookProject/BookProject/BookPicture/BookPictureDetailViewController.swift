@@ -13,6 +13,7 @@ final class BookPictureDetailViewController: UIViewController {
     imageView.contentMode = .scaleAspectFill
     imageView.clipsToBounds = true
     imageView.backgroundColor = .systemGray5
+    imageView.accessibilityLabel = "책 구절의 이미지입니다."
     return imageView
   }()
   
@@ -22,6 +23,7 @@ final class BookPictureDetailViewController: UIViewController {
     label.lineBreakMode = .byWordWrapping
     label.applyBoldCommonStyle()
     label.textAlignment = .left
+    label.accessibilityLabel = "책 구절의 메모입니다."
     return label
   }()
   
@@ -30,6 +32,7 @@ final class BookPictureDetailViewController: UIViewController {
     label.numberOfLines = 1
     label.applyCommonStyle16()
     label.textAlignment = .left
+    label.accessibilityLabel = "책 구절을 저장한 날의 날짜입니다."
     return label
   }()
   
@@ -66,10 +69,13 @@ final class BookPictureDetailViewController: UIViewController {
     
     imageView.image = picture.booktTextpicture
     memoLabel.text = picture.memo
+    memoLabel.accessibilityValue = picture.memo
     
     let formatter = DateFormatter()
-    formatter.dateFormat = "yyyy-MM-dd"
+    formatter.dateFormat = "yyyy년 MM월 dd일"
     dateLabel.text = formatter.string(from: picture.date)
+    
+    dateLabel.accessibilityValue = dateLabel.text
   }
   
   private func setupLayout() {
@@ -99,6 +105,8 @@ final class BookPictureDetailViewController: UIViewController {
       target: self,
       action: #selector(moreButtonTapped)
     )
+    navigationItem.rightBarButtonItem?.accessibilityLabel = "더 보기 메뉴"
+    navigationItem.rightBarButtonItem?.accessibilityHint = "책 구절의 수정 또는 삭제 메뉴를 엽니다."
   }
   
   @objc private func moreButtonTapped() {
@@ -114,6 +122,7 @@ final class BookPictureDetailViewController: UIViewController {
     ) { _ in
       self.pictureUpdateButtonTapped()
     }
+    editAction.accessibilityHint = "입력한 사진과 메모를 수정할 수 있습니다."
     
     let deleteAction = UIAlertAction(
       title: "삭제",
@@ -121,11 +130,13 @@ final class BookPictureDetailViewController: UIViewController {
     ) { _ in
       self.pictureDeleteButtonTapped()
     }
+    deleteAction.accessibilityHint = "입력한 사진과 메모를 삭제 할 수 있습니다."
     
     let cancelAction = UIAlertAction(
       title: "취소",
       style: .cancel
     )
+    cancelAction.accessibilityHint = "취소하고 선택 창을 닫습니다."
     
     alert.addAction(editAction)
     alert.addAction(deleteAction)

@@ -60,6 +60,8 @@ final class BookPictureViewController: UIViewController {
                                     target: self,
                                     action: #selector(didTapAdd))
     navigationItem.rightBarButtonItem = addButton
+    addButton.accessibilityLabel = "책 구절 추가"
+    addButton.accessibilityHint = "책의 구절 사진과 메모를 추가 할 수 있습니다."
   }
   
   override func viewDidLoad() {

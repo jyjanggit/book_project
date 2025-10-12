@@ -14,6 +14,7 @@ final class BookPictureCell: UICollectionViewCell {
     let imageView = UIImageView()
     imageView.contentMode = .scaleAspectFill
     imageView.clipsToBounds = true
+    imageView.accessibilityLabel = "책 구절의 이미지입니다."
     return imageView
   }()
   

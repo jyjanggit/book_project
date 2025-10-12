@@ -15,6 +15,7 @@ final class AddBookPictureViewController: UIViewController {
     imageView.clipsToBounds = true
     imageView.backgroundColor = .systemGray5
     imageView.isUserInteractionEnabled = true
+    imageView.accessibilityLabel = "추가한 책 구절의 사진입니다."
     return imageView
   }()
   
@@ -25,6 +26,8 @@ final class AddBookPictureViewController: UIViewController {
     button.setImage(icon, for: .normal)
     button.tintColor = .systemBlue
     button.setContentHuggingPriority(.required, for: .horizontal)
+    button.accessibilityLabel = "사진 추가"
+    button.accessibilityHint = "클릭하면 사진첩을 열어 사진을 선택할 수 있습니다."
     return button
   }()
   
@@ -32,6 +35,8 @@ final class AddBookPictureViewController: UIViewController {
     let text = UITextField()
     text.placeholder = "책 메모를 입력하세요"
     text.applyUITextField()
+    text.accessibilityLabel = "책 메모 텍스트필드입니다."
+    text.accessibilityHint = "책 관련 메모를 할 수 있는 영역입니다."
     return text
   }()
   
@@ -74,12 +79,15 @@ final class AddBookPictureViewController: UIViewController {
       target: self,
       action: #selector(cancelTapped)
     )
+    navigationItem.leftBarButtonItem?.accessibilityHint = "입력을 취소하고 창을 닫습니다."
+    
     navigationItem.rightBarButtonItem = UIBarButtonItem(
       title: "저장",
       style: .done,
       target: self,
       action: #selector(saveTapped)
     )
+    navigationItem.rightBarButtonItem?.accessibilityHint = "현재 내용을 저장합니다."
   }
   
   override func viewDidLoad() {

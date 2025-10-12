@@ -13,16 +13,16 @@ final class BookSearchCell: UICollectionViewCell {
   }
   
   func configure(viewModel: ViewModel) {
-    //bookID = viewModel.itemId
     titleLabel.text = viewModel.title
-    //bookImageView.image = UIImage(named: "Sample2.jpg")
+    titleLabel.accessibilityLabel = "책 제목: \(viewModel.title)"
     bookImageView.imageFromURL(viewModel.cover)
+    bookImageView.accessibilityLabel = "\(viewModel.title)책의 표지입니다."
     authorLabel.text = viewModel.author
+    authorLabel.accessibilityLabel = "책 저자: \(viewModel.author)"
   }
   
   private let bookImageView: UIImageView = {
     let imageView = UIImageView()
-    //imageView.image = UIImage(named: "Sample2.jpg")
     imageView.contentMode = .scaleAspectFill
     imageView.clipsToBounds = true
     return imageView
