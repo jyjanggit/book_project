@@ -75,6 +75,8 @@ final class BookListViewController: UIViewController  {
                                     target: self,
                                     action: #selector(didTapAdd))
     navigationItem.rightBarButtonItem = addButton
+    addButton.accessibilityLabel = "책 추가"
+    addButton.accessibilityHint = "읽은 책을 추가 할 수 있습니다."
   }
   
   override func viewDidLoad() {

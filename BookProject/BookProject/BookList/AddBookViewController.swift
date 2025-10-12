@@ -13,6 +13,7 @@ class AddBookViewController: UIViewController {
     let text = UITextField()
     text.placeholder = "책 제목을 입력하세요"
     text.applyUITextField()
+    text.accessibilityLabel = "책 제목 입력 필드"
     return text
   }()
   
@@ -21,6 +22,8 @@ class AddBookViewController: UIViewController {
     text.placeholder = "책의 총 페이지수"
     text.keyboardType = .numberPad
     text.applyUITextField()
+    text.accessibilityLabel = "책의 총 페이지수 입력 필드"
+    text.accessibilityHint = "책의 총 페이지 숫자를 입력하세요."
     return text
   }()
   
@@ -29,6 +32,8 @@ class AddBookViewController: UIViewController {
     text.placeholder = "책의 현재 페이지수"
     text.keyboardType = .numberPad
     text.applyUITextField()
+    text.accessibilityLabel = "책의 현재 페이지수 입력 필드"
+    text.accessibilityHint = "현재 읽은 페이지 숫자를 입력하세요. 총 페이지 수를 초과할 수 없습니다."
     return text
   }()
   
@@ -57,12 +62,15 @@ class AddBookViewController: UIViewController {
       target: self,
       action: #selector(cancelTapped)
     )
+    navigationItem.leftBarButtonItem?.accessibilityHint = "입력을 취소하고 창을 닫습니다."
+    
     navigationItem.rightBarButtonItem = UIBarButtonItem(
       title: "저장",
       style: .done,
       target: self,
       action: #selector(saveTapped)
     )
+    navigationItem.rightBarButtonItem?.accessibilityHint = "입력한 책 정보를 저장합니다."
   }
   
   override func viewDidLoad() {
