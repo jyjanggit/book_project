@@ -132,7 +132,7 @@ final class BookSearchViewModel {
   
   func searchBarSearchButtonTapped(query: String) {
     bookSearchRepository.fetchData(searchText: query) { [weak self] (result: Result<BookResponse, NetworkError>) in
-      guard let self = self else { return }
+      guard let self else { return }
       
       switch result {
       case .success(let bookResponse):
@@ -140,7 +140,7 @@ final class BookSearchViewModel {
             .init(itemId: book.isbn13 ?? "",
                   cover: book.cover ?? "",
                   title: book.title ?? "",
-                  description: book.description ?? "",
+                  //description: book.description ?? "",
                   author: book.author ?? "")
         }
         
@@ -159,7 +159,7 @@ final class BookSearchViewModel {
           itemId: book.isbn13 ?? "",
           cover: book.cover ?? "",
           title: book.title ?? "제목 없음",
-          description: book.description ?? "설명 없음",
+          //description: book.description ?? "설명 없음",
           author: book.author ?? "저자 없음"
         )
       )

@@ -57,9 +57,7 @@ final class BookListViewController: UIViewController  {
     
     collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
     collectionView.backgroundColor = UIColor(hex: "#FFFFFF")
-    
-    //collectionView.delegate = self
-    //collectionView.dataSource = self
+
     
     view.addSubview(collectionView)
     
@@ -123,8 +121,15 @@ final class BookListViewController: UIViewController  {
   
   // MARK: - 버튼동작
   @objc private func didTapAdd() {
+    presentAddBookScreen(bookToEdit: nil, bookID: nil)
+  }
+  
+  // 추가, 수정 모달창 공통
+  private func presentAddBookScreen(bookToEdit: Book?, bookID: String?) {
     let addBookViewController = AddBookViewController()
     addBookViewController.delegate = self
+    addBookViewController.bookEdit = bookToEdit
+    addBookViewController.bookID = bookID
     
     let navViewController = UINavigationController(rootViewController: addBookViewController)
     if let sheet = navViewController.sheetPresentationController {
@@ -134,6 +139,7 @@ final class BookListViewController: UIViewController  {
     }
     present(navViewController, animated: true)
   }
+  
   
   
 }
@@ -158,14 +164,7 @@ extension BookListViewController: BookListCellUpdateDelegate {
   
   func didTapUpdateButton(bookID: String) {
     guard let book = viewModel.findBook(by: bookID) else { return }
-    
-    let addBookVC = AddBookViewController()
-    addBookVC.delegate = self
-    addBookVC.bookEdit = book
-    addBookVC.bookID = bookID
-    
-    let navVC = UINavigationController(rootViewController: addBookVC)
-    present(navVC, animated: true)
+    presentAddBookScreen(bookToEdit: book, bookID: bookID)
   }
 }
 
@@ -182,7 +181,8 @@ extension BookListViewController: BookListCellDeleteDelegate {
 extension BookListViewController: viewModelDelegate {
   func reloadData(books: [BookListCell.ViewModel]) {
     DispatchQueue.main.async {
-      self.applySnapshot(items: books.map { Item(viewModel: $0) })
+      self.applySnapshot(items: books.map { bookViewModel in
+        Item(viewModel: bookViewModel) })
     }
   }
 }
