@@ -80,6 +80,7 @@ final class BookListViewModel {
     notifyDelegate(with: viewModels)
   }
   
+  // ui가 사용할 수 있도록 변환해줌
   private func convertToViewModels(_ books: [Book]) -> [BookListCell.ViewModel] {
     return books.map { book in
       BookListCell.ViewModel(
@@ -109,12 +110,14 @@ final class BookListViewModel {
   }
   
   func findBook(by id: String) -> Book? {
-    books.first(where: { $0.id == id })
+    books.first(where: { book in
+      return book.id == id
+    })
   }
   
   // 책 수정
   func handleTapUpdateButton(updatedBook: Book, bookID: String) {
-    guard let targetIndex = books.firstIndex(where: { $0.id == bookID }) else {
+    guard let targetIndex = books.firstIndex(where: { book in book.id == bookID }) else {
       return
     }
     
@@ -130,7 +133,7 @@ final class BookListViewModel {
   
   // 책 삭제
   func handleTapDeleteButton(bookID: String) {
-    guard let targetBookData = books.first(where: { $0.id == bookID }) else {
+    guard let targetBookData = books.first(where: { book in book.id == bookID }) else {
       return
     }
     
@@ -139,8 +142,8 @@ final class BookListViewModel {
         return
       }
       
-      books.removeAll(where: { $0.id == bookID })
-      notifyDelegate(with: convertToViewModels(books))
+      self.books.removeAll(where: { $0.id == bookID })
+      self.notifyDelegate(with: convertToViewModels(books))
     }
   }
 }

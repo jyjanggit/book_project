@@ -1,5 +1,6 @@
 import UIKit
 import SnapKit
+import Alamofire
 
 final class BookSearchCell: UICollectionViewCell {
   
@@ -8,7 +9,7 @@ final class BookSearchCell: UICollectionViewCell {
     var itemId: String
     var cover: String
     var title: String
-    var description: String
+    //var description: String
     var author: String
   }
   
@@ -122,13 +123,14 @@ extension UIImageView {
     
     guard let url = URL(string: urlString) else { return }
     
-    URLSession.shared.dataTask(with: url) { data, _, _ in
-      if let data = data, let image = UIImage(data: data) {
-        // 이미지를 받았다가 메인스레드로 다시 보내야함
-        DispatchQueue.main.async {
-          self.image = image
-        }
+    AF.request(url).responseData { response in
+      if let error = response.error {
+        print("책이미지 에러: \(error)")
+        return
       }
-    }.resume()
+      if let data = response.data, let image = UIImage(data: data) {
+        self.image = image
+      }
+    }
   }
 }

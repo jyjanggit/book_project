@@ -27,8 +27,9 @@ final class BookSearchViewController: UIViewController {
   
   
   private var collectionView: UICollectionView!
-  private var viewModel = BookSearchViewModel()
-  
+  private var viewModel = BookSearchViewModel(bookSearchRepository: Networking.shared)
+
+
   
   
   
