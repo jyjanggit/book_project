@@ -10,7 +10,7 @@ import UIKit
 
 struct BookPictureModel {
   var id: String
-  var memo: String
   var booktTextpicture: UIImage
+  var memo: String
   var date: Date
 }

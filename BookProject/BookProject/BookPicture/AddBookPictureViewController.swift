@@ -4,6 +4,7 @@ import SnapKit
 final class AddBookPictureViewController: UIViewController {
   
   weak var delegate: AddBookPictureViewControllerDelegate?
+  weak var updatedelegate: UpdateBookPictureDelegate?
   
   var pictureEdit: BookPictureModel?
   var pictureID: String?
@@ -136,13 +137,13 @@ final class AddBookPictureViewController: UIViewController {
     
     let picture = BookPictureModel(
       id: pictureID ?? UUID().uuidString,
-      memo: memo,
       booktTextpicture: image,
+      memo: memo,
       date: Date()
     )
     
     if let pictureID = pictureID {
-      delegate?.updateBookPictureTappedButton(self, didUpdate: picture, pictureID: pictureID)
+      updatedelegate?.updateBookPictureTappedButton(self, didUpdate: picture, pictureID: pictureID)
     } else {
       delegate?.addBookPictureTappedButton(self, didAdd: picture)
     }

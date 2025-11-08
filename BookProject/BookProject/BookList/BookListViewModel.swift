@@ -142,7 +142,7 @@ final class BookListViewModel {
         return
       }
       
-      self.books.removeAll(where: { $0.id == bookID })
+      self.books.removeAll(where: { book in book.id == bookID })
       self.notifyDelegate(with: convertToViewModels(books))
     }
   }
