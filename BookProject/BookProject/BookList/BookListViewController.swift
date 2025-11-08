@@ -104,7 +104,7 @@ final class BookListViewController: UIViewController  {
       cell.deleteDelegate = self
     
       
-      cell.configure(viewModel: item.viewModel) // 셀에 있던 구조체에 들어간 거 받아넣음..하나씩
+      cell.configure(viewModel: item.viewModel)
       return cell
       
       

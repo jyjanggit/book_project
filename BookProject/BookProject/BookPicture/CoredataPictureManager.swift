@@ -43,8 +43,8 @@ final class CoredataPictureManager {
             
             return BookPictureModel(
               id: entity.id,
-              memo: entity.memo,
               booktTextpicture: image,
+              memo: entity.memo,
               date: entity.date
             )
           }

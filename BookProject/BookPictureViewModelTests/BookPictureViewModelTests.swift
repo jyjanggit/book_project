@@ -72,7 +72,7 @@ struct BookPictureViewModelTests {
     viewModel.delegate = delegate
     
     // when
-    viewModel.addBookPictureTappedButton(addPicture: BookPictureModel(id: "id", memo: "memo", booktTextpicture: UIImage(), date: Date()))
+    viewModel.addBookPictureTappedButton(addPicture: BookPictureModel(id: "id", booktTextpicture: UIImage(), memo: "memo", date: Date()))
     
     // then
     #expect(bookPictureRepository.savePictureDataCallCount == 1)
@@ -89,8 +89,8 @@ struct BookPictureViewModelTests {
     )
     
     let id = "testupdateId"
-    let firstBook = BookPictureModel(id: id, memo: "수정전", booktTextpicture: UIImage(), date: Date())
-    let secondBook = BookPictureModel(id: id, memo: "수정후", booktTextpicture: UIImage(), date: Date())
+    let firstBook = BookPictureModel(id: id, booktTextpicture: UIImage(), memo: "수정전", date: Date())
+    let secondBook = BookPictureModel(id: id, booktTextpicture: UIImage(), memo: "수정후", date: Date())
     
     viewModel.delegate = delegate
     
@@ -115,7 +115,7 @@ struct BookPictureViewModelTests {
     )
     
     let id = "testdeleteId"
-    let deleteBook = BookPictureModel(id: id, memo: "삭제", booktTextpicture: UIImage(), date: Date())
+    let deleteBook = BookPictureModel(id: id, booktTextpicture: UIImage(), memo: "삭제", date: Date())
     
     viewModel.delegate = delegate
     bookPictureRepository.fakePictures = [deleteBook]
