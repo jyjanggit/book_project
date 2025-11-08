@@ -2,6 +2,9 @@ import UIKit
 
 protocol AddBookPictureViewControllerDelegate: AnyObject {
   func addBookPictureTappedButton(_ vc: AddBookPictureViewController, didAdd picture: BookPictureModel)
+}
+
+protocol UpdateBookPictureDelegate: AnyObject {
   func updateBookPictureTappedButton(_ vc: AddBookPictureViewController, didUpdate picture: BookPictureModel, pictureID: String)
 }
 
@@ -81,11 +84,13 @@ final class BookPictureViewModel {
   }
   
   func findPicture(by id: String) -> BookPictureModel? {
-    pictures.first(where: { $0.id == id })
+    pictures.first(where: { book in
+      return book.id ==  id
+    })
   }
   
   func handleTapUpdateButton(updatedPicture: BookPictureModel, pictureID: String) {
-    guard let targetIndex = pictures.firstIndex(where: { $0.id == pictureID }) else {
+    guard let targetIndex = pictures.firstIndex(where: { book in book.id == pictureID }) else {
       return
     }
     
@@ -98,14 +103,14 @@ final class BookPictureViewModel {
   }
   
   func handleTapDeleteButton(pictureID: String) {
-    guard let targetPictureData = pictures.first(where: { $0.id == pictureID }) else {
+    guard let targetPictureData = pictures.first(where: { book in book.id == pictureID }) else {
       return
     }
     
     bookPictureRepository.deleteBookPictureData(data: targetPictureData) { [weak self] in
       guard let self else { return }
       
-      pictures.removeAll(where: { $0.id == pictureID })
+      pictures.removeAll(where: { book in book.id == pictureID })
       notifyDelegate(with: convertToViewModels(pictures))
     }
   }

@@ -43,6 +43,8 @@ protocol BookSearchRepository: AnyObject {
   func fetchData<T: Codable>(searchText: String, completion: @escaping (Result<T, NetworkError>) -> Void)
 }
 
+
+
 final class Networking: BookSearchRepository {
   
   static let shared = Networking()
@@ -66,7 +68,7 @@ final class Networking: BookSearchRepository {
       .responseData { response in
         
         if let error = response.error {
-          print("Alamofire Request Error: \(error.localizedDescription)")
+          print("Alamofire 요청 에러 \(error.localizedDescription)")
           return completion(.failure(.networkingError))
         }
         
@@ -107,7 +109,7 @@ final class Networking: BookSearchRepository {
       let decoded = try JSONDecoder().decode(T.self, from: cleanData)
       completion(.success(decoded))
     } catch {
-      print("Decoding Error: \(error.localizedDescription)")
+      print("디코딩 에러: \(error.localizedDescription)")
       completion(.failure(.parseError))
     }
   }

@@ -116,11 +116,9 @@ extension BookPictureViewController: AddBookPictureViewControllerDelegate {
   func addBookPictureTappedButton(_ vc: AddBookPictureViewController, didAdd picture: BookPictureModel) {
     viewModel.addBookPictureTappedButton(addPicture: picture)
   }
-  
-  func updateBookPictureTappedButton(_ vc: AddBookPictureViewController, didUpdate picture: BookPictureModel, pictureID: String) {
-    viewModel.handleTapUpdateButton(updatedPicture: picture, pictureID: pictureID)
-  }
 }
+
+
 
 extension BookPictureViewController: UICollectionViewDelegate {
   func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -136,7 +134,9 @@ extension BookPictureViewController: UICollectionViewDelegate {
 extension BookPictureViewController: BookPictureViewModelDelegate {
   func reloadData(pictures: [BookPictureCell.ViewModel]) {
     DispatchQueue.main.async {
-      self.applySnapshot(items: pictures.map { Item(viewModel: $0) })
+      self.applySnapshot(items: pictures.map { pictureViewModel in
+        Item(viewModel: pictureViewModel) })
     }
   }
 }
+

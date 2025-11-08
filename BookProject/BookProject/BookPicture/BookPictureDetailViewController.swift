@@ -74,7 +74,6 @@ final class BookPictureDetailViewController: UIViewController {
     let formatter = DateFormatter()
     formatter.dateFormat = "yyyy년 MM월 dd일"
     dateLabel.text = formatter.string(from: picture.date)
-    
     dateLabel.accessibilityValue = dateLabel.text
   }
   
@@ -152,12 +151,13 @@ final class BookPictureDetailViewController: UIViewController {
     }
     
     let addBookPictureVC = AddBookPictureViewController()
-    addBookPictureVC.delegate = self
+    addBookPictureVC.updatedelegate = self
     addBookPictureVC.pictureEdit = picture
     addBookPictureVC.pictureID = pictureID
     
     let navVC = UINavigationController(rootViewController: addBookPictureVC)
     present(navVC, animated: true)
+    
   }
   
   @objc private func pictureDeleteButtonTapped() {
@@ -179,10 +179,7 @@ final class BookPictureDetailViewController: UIViewController {
   }
 }
 
-extension BookPictureDetailViewController: AddBookPictureViewControllerDelegate {
-  func addBookPictureTappedButton(_ vc: AddBookPictureViewController, didAdd picture: BookPictureModel) {
-    // 사용 안 함
-  }
+extension BookPictureDetailViewController: UpdateBookPictureDelegate {
   
   func updateBookPictureTappedButton(_ vc: AddBookPictureViewController, didUpdate picture: BookPictureModel, pictureID: String) {
     viewModel?.handleTapUpdateButton(updatedPicture: picture, pictureID: pictureID)
