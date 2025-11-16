@@ -13,10 +13,12 @@ final class BookSearchCell: UICollectionViewCell {
     var author: String
   }
   
+  private var imageRequest: DataRequest?
+  
   func configure(viewModel: ViewModel) {
     titleLabel.text = viewModel.title
     titleLabel.accessibilityLabel = "책 제목: \(viewModel.title)"
-    bookImageView.imageFromURL(viewModel.cover)
+    imageRequest = bookImageView.imageFromURL(viewModel.cover)
     bookImageView.accessibilityLabel = "\(viewModel.title)책의 표지입니다."
     authorLabel.text = viewModel.author
     authorLabel.accessibilityLabel = "책 저자: \(viewModel.author)"
@@ -96,6 +98,13 @@ final class BookSearchCell: UICollectionViewCell {
     fatalError("init(coder:) has not been implemented")
   }
   
+  override func prepareForReuse() {
+    super.prepareForReuse()
+    if let imageRequest = imageRequest, imageRequest.isFinished == false {
+      imageRequest.cancel()
+    }
+  }
+  
   
   
   
@@ -117,13 +126,13 @@ final class BookSearchCell: UICollectionViewCell {
 
 // 이미지 url로 받아오기
 extension UIImageView {
-  func imageFromURL(_ urlString: String) {
+  func imageFromURL(_ urlString: String) -> DataRequest? {
     // 기본 이미지
     self.image = UIImage(named: "Sample2.jpg")
     
-    guard let url = URL(string: urlString) else { return }
+    guard let url = URL(string: urlString) else { return nil }
     
-    AF.request(url).responseData { response in
+    return AF.request(url).responseData { response in
       if let error = response.error {
         print("책이미지 에러: \(error)")
         return

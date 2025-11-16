@@ -30,7 +30,7 @@ final class 가짜_BookListRepository: BookListRepository {
   }
 }
 
-final class 가짜_viewModelDelegate: viewModelDelegate {
+final class 가짜_viewModelDelegate: BookListViewModelDelegate {
   var reloadDataCallCount = 0
   func reloadData(books: [BookListCell.ViewModel]) {
     reloadDataCallCount += 1

@@ -178,7 +178,7 @@ extension BookListViewController: BookListCellDeleteDelegate {
 
 
 
-extension BookListViewController: viewModelDelegate {
+extension BookListViewController: BookListViewModelDelegate {
   func reloadData(books: [BookListCell.ViewModel]) {
     DispatchQueue.main.async {
       self.applySnapshot(items: books.map { bookViewModel in

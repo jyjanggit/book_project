@@ -39,32 +39,58 @@ struct BookSearchResult: Codable {
   }
 }
 
+protocol Cancellation {
+  func cancelTask()
+}
+
+extension DataRequest: Cancellation {
+  func cancelTask() {
+    if isFinished == false {
+      cancel()
+    }
+  }
+}
+
 protocol BookSearchRepository: AnyObject {
-  func fetchData<T: Codable>(searchText: String, completion: @escaping (Result<T, NetworkError>) -> Void)
+  func fetchData<T: Codable>(
+    searchText: String,
+    completion: @escaping (Result<T, NetworkError>) -> Void
+  ) -> Cancellation?
+}
+
+final class BookSearchRepositoryImpl: BookSearchRepository {
+  
+  private let networking = Networking.shared
+  
+  func fetchData<T: Codable>(
+    searchText: String,
+    completion: @escaping (Result<T, NetworkError>) -> Void
+  ) -> Cancellation? {
+    guard let encodedSearchText = searchText.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+      completion(.failure(.networkingError))
+      return nil
+    }
+    
+    let urlString = "\(BookApi.bookURL)&query=\(encodedSearchText)&QueryType=Keyword&MaxResults=20&start=1&SearchTarget=Book&output=js&Version=20131101&Cover=md"
+    
+    return networking.fetchData(
+      url: URL(string: urlString)!,
+      completion: completion
+    )
+  }
 }
 
 
-
-final class Networking: BookSearchRepository {
+final class Networking {
   
   static let shared = Networking()
   private init() {}
   
-  func fetchData<T: Codable>(searchText: String, completion: @escaping (Result<T, NetworkError>) -> Void) {
-    guard let encodedSearchText = searchText.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-      completion(.failure(.networkingError))
-      return
-    }
-    
-    let url = "\(BookApi.bookURL)&query=\(encodedSearchText)&QueryType=Keyword&MaxResults=20&start=1&SearchTarget=Book&output=js&Version=20131101&Cover=md"
-    
-    performRequest(url: url, completion: completion)
-  }
-  
-  
-  private func performRequest<T: Codable>(url: String, completion: @escaping (Result<T, NetworkError>) -> Void) {
-    
-    AF.request(url, method: .get)
+  func fetchData<T: Codable>(
+    url: URL,
+    completion: @escaping (Result<T, NetworkError>) -> Void
+  ) -> Cancellation {
+    return AF.request(url, method: .get)
       .responseData { response in
         
         if let error = response.error {
@@ -125,28 +151,27 @@ final class BookSearchViewModel {
   
   var bookSearchList: [BookSearchModel] = []
   
+  private var searchTaskCancellation: Cancellation?
+  
   private let bookSearchRepository: BookSearchRepository
   
-  init(bookSearchRepository: BookSearchRepository = Networking.shared) {
+  init(bookSearchRepository: BookSearchRepository = BookSearchRepositoryImpl()) {
     self.bookSearchRepository = bookSearchRepository
   }
   
   
   func searchBarSearchButtonTapped(query: String) {
-    bookSearchRepository.fetchData(searchText: query) { [weak self] (result: Result<BookResponse, NetworkError>) in
+    searchTaskCancellation?.cancelTask()
+    searchTaskCancellation = bookSearchRepository.fetchData(searchText: query) { [weak self] (result: Result<BookResponse, NetworkError>) in
       guard let self else { return }
       
       switch result {
       case .success(let bookResponse):
         self.bookSearchList = bookResponse.item.map{ book in
-            .init(itemId: book.isbn13 ?? "",
-                  cover: book.cover ?? "",
-                  title: book.title ?? "",
-                  //description: book.description ?? "",
-                  author: book.author ?? "")
+          BookSearchModel(from: book)
         }
         
-        self.delegate?.reloadData(items: self.bookSearchResultToSearchModel(bookResponse.item))
+        self.delegate?.reloadData(items: self.convertToViewModels(bookResponse.item))
         
       case .failure(let error):
         print("검색 실패: \(error.localizedDescription)")
@@ -154,7 +179,7 @@ final class BookSearchViewModel {
     }
   }
   
-  private func bookSearchResultToSearchModel(_ bookResults: [BookSearchResult]) -> [BookSearchViewController.Item] {
+  private func convertToViewModels(_ bookResults: [BookSearchResult]) -> [BookSearchViewController.Item] {
     return bookResults.map { book in
       BookSearchViewController.Item(
         viewModel: BookSearchCell.ViewModel(
