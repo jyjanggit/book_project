@@ -1,5 +1,6 @@
 import UIKit
 import SnapKit
+import Combine
 
 final class BookListViewController: UIViewController  {
   
@@ -15,10 +16,6 @@ final class BookListViewController: UIViewController  {
   private struct Item: Hashable {
     let viewModel: BookListCell.ViewModel
     
-//    static func == (lhs: BookListViewController.Item, rhs: BookListViewController.Item) -> Bool {
-//      return lhs.viewModel == rhs.viewModel
-//    }
-    
     func hash(into hasher: inout Hasher) {
       hasher.combine(viewModel.id)
     }
@@ -31,6 +28,7 @@ final class BookListViewController: UIViewController  {
   
   private var collectionView: UICollectionView!
   private var viewModel = BookListViewModel(bookListRepository: BookListRepositoryImpl() )
+  private var cancellables = Set<AnyCancellable>()
   
   // MARK: - ui
   private func setupCollectionView() {
@@ -57,7 +55,7 @@ final class BookListViewController: UIViewController  {
     
     collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
     collectionView.backgroundColor = UIColor(hex: "#FFFFFF")
-
+    
     
     view.addSubview(collectionView)
     
@@ -84,12 +82,23 @@ final class BookListViewController: UIViewController  {
     naviButton()
     setupCollectionView()
     setupDataSource()
-    viewModel.delegate = self
     
+    bindViewModel()
     viewModel.loadBooks()
     
   }
   
+  
+  private func bindViewModel() {
+      viewModel.$bookViewModels
+      .receive(on: DispatchQueue.main)
+      .sink { [weak self] viewModels in
+        self?.applySnapshot(items: viewModels.map { bookViewModel in
+          Item(viewModel: bookViewModel)
+        })
+      }
+      .store(in: &cancellables)
+  }
   
   
   private func setupDataSource() {
@@ -102,7 +111,7 @@ final class BookListViewController: UIViewController  {
       
       cell.updateDelegate = self
       cell.deleteDelegate = self
-    
+      
       
       cell.configure(viewModel: item.viewModel)
       return cell
@@ -176,14 +185,4 @@ extension BookListViewController: BookListCellDeleteDelegate {
 }
 
 
-
-
-extension BookListViewController: BookListViewModelDelegate {
-  func reloadData(books: [BookListCell.ViewModel]) {
-    DispatchQueue.main.async {
-      self.applySnapshot(items: books.map { bookViewModel in
-        Item(viewModel: bookViewModel) })
-    }
-  }
-}
 

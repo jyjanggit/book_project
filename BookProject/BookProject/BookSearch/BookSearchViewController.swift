@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import Combine
 
 
 final class BookSearchViewController: UIViewController {
@@ -27,8 +28,8 @@ final class BookSearchViewController: UIViewController {
   
   
   private var collectionView: UICollectionView!
-  private var viewModel = BookSearchViewModel(bookSearchRepository: Networking.shared)
-
+  private var viewModel = BookSearchViewModel(bookSearchRepository: BookSearchRepositoryImpl())
+  private var cancellables = Set<AnyCancellable>()
 
   
   
@@ -77,7 +78,6 @@ final class BookSearchViewController: UIViewController {
   }
   
   private func setupLayout() {
-    //uISearchController.searchResultsUpdater = self
     uISearchController.searchBar.delegate = self
     
     navigationItem.searchController = uISearchController
@@ -122,14 +122,26 @@ final class BookSearchViewController: UIViewController {
     super.viewDidLoad()
     view.backgroundColor = UIColor(hex: "#FFFFFF")
     self.title = "책 검색"
-    viewModel.delegate = self
+    bindViewModel()
     setupCollectionView()
     setupLayout()
     setupDataSource()
   }
   
   
+  private func bindViewModel() {
+    viewModel.$searchResults
+      .receive(on: DispatchQueue.main)
+      .sink { [weak self] search in
+        self?.applySnapshot(items: search, animated: true)
+      }.store(in: &cancellables)
+
+  }
+  
 }
+
+
+
 
 extension BookSearchViewController: UISearchBarDelegate {
   func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
@@ -138,11 +150,3 @@ extension BookSearchViewController: UISearchBarDelegate {
   }
 }
 
-
-extension BookSearchViewController: BookSearchViewModelDelegate {
-  func reloadData(items: [Item]) {
-    DispatchQueue.main.async {
-      self.applySnapshot(items: items)
-    }
-  }
-}

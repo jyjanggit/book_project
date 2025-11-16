@@ -1,5 +1,6 @@
 import UIKit
 import Alamofire
+import Combine
 
 // 네트워크, 에러 담당
 enum NetworkError: Error {
@@ -39,43 +40,35 @@ struct BookSearchResult: Codable {
   }
 }
 
-protocol Cancellation {
-  func cancelTask()
-}
-
-extension DataRequest: Cancellation {
-  func cancelTask() {
-    if isFinished == false {
-      cancel()
-    }
-  }
-}
+//protocol Cancellation {
+//  func cancelTask()
+//}
+//
+//extension DataRequest: Cancellation {
+//  func cancelTask() {
+//    if isFinished == false {
+//      cancel()
+//    }
+//  }
+//}
 
 protocol BookSearchRepository: AnyObject {
-  func fetchData<T: Codable>(
-    searchText: String,
-    completion: @escaping (Result<T, NetworkError>) -> Void
-  ) -> Cancellation?
+  func fetchData(searchText: String) -> AnyPublisher<BookResponse, NetworkError>
 }
 
 final class BookSearchRepositoryImpl: BookSearchRepository {
   
   private let networking = Networking.shared
   
-  func fetchData<T: Codable>(
-    searchText: String,
-    completion: @escaping (Result<T, NetworkError>) -> Void
-  ) -> Cancellation? {
+  func fetchData(searchText: String) -> AnyPublisher<BookResponse, NetworkError> {
     guard let encodedSearchText = searchText.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-      completion(.failure(.networkingError))
-      return nil
+      return Fail(error: NetworkError.networkingError).eraseToAnyPublisher()
     }
     
     let urlString = "\(BookApi.bookURL)&query=\(encodedSearchText)&QueryType=Keyword&MaxResults=20&start=1&SearchTarget=Book&output=js&Version=20131101&Cover=md"
     
     return networking.fetchData(
-      url: URL(string: urlString)!,
-      completion: completion
+      url: URL(string: urlString)!
     )
   }
 }
@@ -86,30 +79,31 @@ final class Networking {
   static let shared = Networking()
   private init() {}
   
-  func fetchData<T: Codable>(
-    url: URL,
-    completion: @escaping (Result<T, NetworkError>) -> Void
-  ) -> Cancellation {
-    return AF.request(url, method: .get)
-      .responseData { response in
-        
-        if let error = response.error {
-          print("Alamofire 요청 에러 \(error.localizedDescription)")
-          return completion(.failure(.networkingError))
+  func fetchData<T: Codable>(url: URL) -> AnyPublisher<T, NetworkError> {
+    
+    return Future<T, NetworkError> { promise in
+      
+      AF.request(url, method: .get)
+        .responseData { response in
+          
+          if let error = response.error {
+            print("Alamofire 요청 에러 \(error.localizedDescription)")
+            return promise(.failure(.networkingError))
+          }
+          
+          self.handleJSONPDecoding(response: response, promise: promise)
         }
-        
-        self.handleJSONPDecoding(response: response, completion: completion)
-      }
+    }.eraseToAnyPublisher()
   }
   
-  private func handleJSONPDecoding<T: Codable>(response: AFDataResponse<Data>, completion: @escaping (Result<T, NetworkError>) -> Void) {
+  private func handleJSONPDecoding<T: Codable>(response: AFDataResponse<Data>, promise: @escaping (Result<T, NetworkError>) -> Void) {
     
     guard let data = response.data else {
-      return completion(.failure(.dataError))
+      return promise(.failure(.dataError))
     }
     
     guard var string = String(data: data, encoding: .utf8) else {
-      return completion(.failure(.dataError))
+      return promise(.failure(.dataError))
     }
     
     let trimmedString = string.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -128,15 +122,15 @@ final class Networking {
     }
     
     guard let cleanData = string.data(using: .utf8) else {
-      return completion(.failure(.parseError))
+      return promise(.failure(.parseError))
     }
     
     do {
       let decoded = try JSONDecoder().decode(T.self, from: cleanData)
-      completion(.success(decoded))
+      promise(.success(decoded))
     } catch {
       print("디코딩 에러: \(error.localizedDescription)")
-      completion(.failure(.parseError))
+      promise(.failure(.parseError))
     }
   }
 }
@@ -147,11 +141,9 @@ protocol BookSearchViewModelDelegate: AnyObject {
 
 final class BookSearchViewModel {
   
-  weak var delegate: BookSearchViewModelDelegate?
+  @Published var searchResults: [BookSearchViewController.Item] = []
   
-  var bookSearchList: [BookSearchModel] = []
-  
-  private var searchTaskCancellation: Cancellation?
+  private var searchCancellable: AnyCancellable?
   
   private let bookSearchRepository: BookSearchRepository
   
@@ -161,23 +153,22 @@ final class BookSearchViewModel {
   
   
   func searchBarSearchButtonTapped(query: String) {
-    searchTaskCancellation?.cancelTask()
-    searchTaskCancellation = bookSearchRepository.fetchData(searchText: query) { [weak self] (result: Result<BookResponse, NetworkError>) in
-      guard let self else { return }
-      
-      switch result {
-      case .success(let bookResponse):
-        self.bookSearchList = bookResponse.item.map{ book in
-          BookSearchModel(from: book)
+    searchCancellable?.cancel()
+    
+    searchCancellable = bookSearchRepository.fetchData(searchText: query)
+      .receive(on: DispatchQueue.main)
+      .sink(receiveCompletion: { completion in
+        switch completion {
+        case .finished:
+          print("검색 완료")
+        case .failure(let error):
+          print("검색 실패: \(error.localizedDescription)")
         }
-        
-        self.delegate?.reloadData(items: self.convertToViewModels(bookResponse.item))
-        
-      case .failure(let error):
-        print("검색 실패: \(error.localizedDescription)")
-      }
-    }
+      }, receiveValue: { [weak self] bookResponse in
+        self?.searchResults = self?.convertToViewModels(bookResponse.item) ?? []
+      })
   }
+  
   
   private func convertToViewModels(_ bookResults: [BookSearchResult]) -> [BookSearchViewController.Item] {
     return bookResults.map { book in
@@ -186,7 +177,6 @@ final class BookSearchViewModel {
           itemId: book.isbn13 ?? "",
           cover: book.cover ?? "",
           title: book.title ?? "제목 없음",
-          //description: book.description ?? "설명 없음",
           author: book.author ?? "저자 없음"
         )
       )
