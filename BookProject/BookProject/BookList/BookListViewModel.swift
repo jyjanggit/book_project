@@ -12,7 +12,7 @@ protocol AddBookViewControllerDelegate: AnyObject {
   func updateBookTappedButton(_ vc: AddBookViewController, didUpdate book: Book, bookID: String)
 }
 
-protocol viewModelDelegate: AnyObject {
+protocol BookListViewModelDelegate: AnyObject {
   func reloadData(books: [BookListCell.ViewModel])
 }
 
@@ -65,7 +65,7 @@ final class BookListRepositoryImpl: BookListRepository {
 
 final class BookListViewModel {
   
-  weak var delegate: viewModelDelegate?
+  weak var delegate: BookListViewModelDelegate?
   private let bookListRepository: BookListRepository
   private var books: [Book] = []
   
