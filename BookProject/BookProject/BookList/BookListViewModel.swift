@@ -6,14 +6,11 @@
 //
 
 import UIKit
+import Combine
 
 protocol AddBookViewControllerDelegate: AnyObject {
   func addBookTappedButton(_ vc: AddBookViewController, didAdd book: Book)
   func updateBookTappedButton(_ vc: AddBookViewController, didUpdate book: Book, bookID: String)
-}
-
-protocol BookListViewModelDelegate: AnyObject {
-  func reloadData(books: [BookListCell.ViewModel])
 }
 
 protocol BookListCellUpdateDelegate: AnyObject {
@@ -65,7 +62,7 @@ final class BookListRepositoryImpl: BookListRepository {
 
 final class BookListViewModel {
   
-  weak var delegate: BookListViewModelDelegate?
+  @Published var bookViewModels: [BookListCell.ViewModel] = []
   private let bookListRepository: BookListRepository
   private var books: [Book] = []
   
@@ -76,8 +73,7 @@ final class BookListViewModel {
   // 데이터 호출(코어데이터에서)
   func loadBooks() {
     self.books = bookListRepository.fetchBooks()
-    let viewModels = convertToViewModels(books)
-    notifyDelegate(with: viewModels)
+    let bookViewModels = convertToViewModels(books)
   }
   
   // ui가 사용할 수 있도록 변환해줌
@@ -93,10 +89,7 @@ final class BookListViewModel {
     }
   }
   
-  private func notifyDelegate(with viewModels: [BookListCell.ViewModel]) {
-    delegate?.reloadData(books: viewModels)
-  }
-  
+
   // 책 추가
   func addBookTappedButton(addBook: Book) {
     bookListRepository.saveBookData(book: addBook) { [weak self] in
@@ -105,7 +98,7 @@ final class BookListViewModel {
       }
       
       books.append(addBook)
-      notifyDelegate(with: convertToViewModels(books))
+      self.bookViewModels = convertToViewModels(books)
     }
   }
   
@@ -127,7 +120,7 @@ final class BookListViewModel {
       }
       
       self.books[targetIndex] = updatedBook
-      self.notifyDelegate(with: self.convertToViewModels(self.books))
+      self.bookViewModels = convertToViewModels(books)
     }
   }
   
@@ -143,7 +136,7 @@ final class BookListViewModel {
       }
       
       self.books.removeAll(where: { book in book.id == bookID })
-      self.notifyDelegate(with: convertToViewModels(books))
+      self.bookViewModels = convertToViewModels(books)
     }
   }
 }

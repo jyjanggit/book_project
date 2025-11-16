@@ -1,5 +1,6 @@
 import UIKit
 import SnapKit
+import Combine
 
 final class BookPictureViewController: UIViewController {
   
@@ -18,6 +19,7 @@ final class BookPictureViewController: UIViewController {
   private var dataSource: DataSource!
   private var collectionView: UICollectionView!
   private var viewModel = BookPictureViewModel(bookPictureRepository: BookPictureRepositoryImpl())
+  private var cancellables = Set<AnyCancellable>()
   
   // MARK: - UI
   private func setupCollectionView() {
@@ -71,8 +73,19 @@ final class BookPictureViewController: UIViewController {
     naviButton()
     setupCollectionView()
     setupDataSource()
-    viewModel.delegate = self
     viewModel.loadPictures()
+    bindViewModel()
+  }
+  
+  private func bindViewModel() {
+    viewModel.$pictureViewModels
+      .receive(on: DispatchQueue.main)
+      .sink { [weak self] picture in
+        self?.applySnapshot(items: picture.map { pictureViewModel in
+          Item(viewModel: pictureViewModel)
+        })
+      }
+      .store(in: &cancellables)
   }
   
   private func setupDataSource() {
@@ -131,12 +144,4 @@ extension BookPictureViewController: UICollectionViewDelegate {
   }
 }
 
-extension BookPictureViewController: BookPictureViewModelDelegate {
-  func reloadData(pictures: [BookPictureCell.ViewModel]) {
-    DispatchQueue.main.async {
-      self.applySnapshot(items: pictures.map { pictureViewModel in
-        Item(viewModel: pictureViewModel) })
-    }
-  }
-}
 

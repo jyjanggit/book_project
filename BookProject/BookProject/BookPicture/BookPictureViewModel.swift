@@ -1,4 +1,5 @@
 import UIKit
+import Combine
 
 protocol AddBookPictureViewControllerDelegate: AnyObject {
   func addBookPictureTappedButton(_ vc: AddBookPictureViewController, didAdd picture: BookPictureModel)
@@ -8,9 +9,6 @@ protocol UpdateBookPictureDelegate: AnyObject {
   func updateBookPictureTappedButton(_ vc: AddBookPictureViewController, didUpdate picture: BookPictureModel, pictureID: String)
 }
 
-protocol BookPictureViewModelDelegate: AnyObject {
-  func reloadData(pictures: [BookPictureCell.ViewModel])
-}
 
 protocol BookPictureRepository: AnyObject {
   func fetchPictures() -> [BookPictureModel]
@@ -42,7 +40,7 @@ final class BookPictureRepositoryImpl: BookPictureRepository {
 
 final class BookPictureViewModel {
   
-  weak var delegate: BookPictureViewModelDelegate?
+  @Published var pictureViewModels: [BookPictureCell.ViewModel] = []
   private let bookPictureRepository: BookPictureRepository
   private var pictures: [BookPictureModel] = []
   
@@ -53,7 +51,7 @@ final class BookPictureViewModel {
   func loadPictures() {
     self.pictures = bookPictureRepository.fetchPictures()
     let viewModels = convertToViewModels(pictures)
-    notifyDelegate(with: viewModels)
+    self.pictureViewModels = viewModels
   }
   
   private func convertToViewModels(_ pictures: [BookPictureModel]) -> [BookPictureCell.ViewModel] {
@@ -70,16 +68,12 @@ final class BookPictureViewModel {
     }
   }
   
-  private func notifyDelegate(with viewModels: [BookPictureCell.ViewModel]) {
-    delegate?.reloadData(pictures: viewModels)
-  }
-  
   func addBookPictureTappedButton(addPicture: BookPictureModel) {
     bookPictureRepository.saveBookPictureData(picture: addPicture) { [weak self] in
       guard let self else { return }
       
       pictures.append(addPicture)
-      notifyDelegate(with: convertToViewModels(pictures))
+      self.pictureViewModels = convertToViewModels(pictures)
     }
   }
   
@@ -98,7 +92,7 @@ final class BookPictureViewModel {
       guard let self else { return }
       
       self.pictures[targetIndex] = updatedPicture
-      self.notifyDelegate(with: self.convertToViewModels(self.pictures))
+      self.pictureViewModels = self.convertToViewModels(self.pictures)
     }
   }
   
@@ -111,7 +105,7 @@ final class BookPictureViewModel {
       guard let self else { return }
       
       pictures.removeAll(where: { book in book.id == pictureID })
-      notifyDelegate(with: convertToViewModels(pictures))
+      self.pictureViewModels = convertToViewModels(pictures)
     }
   }
 }
