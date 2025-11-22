@@ -10,9 +10,9 @@ import CoreData
 
 final class CoredataManager {
   
+  // 싱글톤 객체
   static let shared = CoredataManager()
   private init() {}
-  // 싱글톤 객체
   
   // 앱델리게이트
   private let appDelegate = UIApplication.shared.delegate as? AppDelegate
@@ -23,7 +23,8 @@ final class CoredataManager {
   // 엔티티 이름
   private let modelName: String = "BookDataModel"
   
-  // 코어데이터 저장 데이터 읽어오기
+  // MARK: - Read
+  
   func getBookListFromCoreData() -> [BookDataModel] {
     var bookList: [BookDataModel] = []
     
@@ -32,7 +33,7 @@ final class CoredataManager {
       // 있다면 요청
       let request = NSFetchRequest<NSManagedObject>(entityName: self.modelName)
       // 정렬순서를 정해서 요청하기 (날짜순)
-      let dataOrder = NSSortDescriptor(key: "createdAt", ascending: true)
+      let dataOrder = NSSortDescriptor(key: "date", ascending: true)
       request.sortDescriptors = [dataOrder]
       
       do {
@@ -49,7 +50,8 @@ final class CoredataManager {
     
   }
   
-  // 코어데이터에 생성하기
+  // MARK: - Save
+  
   func saveBookData(book: Book, completion: @escaping () -> Void ) {
     
     if let context = context {
@@ -65,7 +67,7 @@ final class CoredataManager {
           bookData.totalPage = Int16(book.totalPage)
           bookData.currentPage = Int16(book.currentPage)
           bookData.percentage = book.percentage
-          bookData.createdAt = Date()
+          bookData.date = Date()
           
           appDelegate?.saveContext()
         }
@@ -74,28 +76,8 @@ final class CoredataManager {
     completion()
   }
   
-  // 데이터 삭제하기
-  func deleteBookData(data: Book, completion: @escaping () -> Void) {
-    if let context = context {
-      let request = NSFetchRequest<NSManagedObject>(entityName: self.modelName)
-      request.predicate = NSPredicate(format: "id == %@", data.id)
-      
-      do {
-        if let fetchedBookList = try context.fetch(request) as? [BookDataModel] {
-          if let targetBook = fetchedBookList.first {
-            context.delete(targetBook)
-            appDelegate?.saveContext()
-          }
-        }
-        completion()
-      } catch {
-        print("삭제실패")
-        completion()
-      }
-    }
-  }
+  // MARK: - Update
   
-  // 데이터 수정하기
   func updateBookData(updateData: Book, completion: @escaping () -> Void) {
     if let context = context {
       let request = NSFetchRequest<NSManagedObject>(entityName: self.modelName)
@@ -115,6 +97,28 @@ final class CoredataManager {
         completion()
       } catch {
         print("수정실패")
+        completion()
+      }
+    }
+  }
+  
+  // MARK: - Delete
+  
+  func deleteBookData(data: Book, completion: @escaping () -> Void) {
+    if let context = context {
+      let request = NSFetchRequest<NSManagedObject>(entityName: self.modelName)
+      request.predicate = NSPredicate(format: "id == %@", data.id)
+      
+      do {
+        if let fetchedBookList = try context.fetch(request) as? [BookDataModel] {
+          if let targetBook = fetchedBookList.first {
+            context.delete(targetBook)
+            appDelegate?.saveContext()
+          }
+        }
+        completion()
+      } catch {
+        print("삭제실패")
         completion()
       }
     }

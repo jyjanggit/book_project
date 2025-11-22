@@ -1,14 +1,17 @@
 import UIKit
 import Combine
 
+// MARK: - Delegate
+
 protocol AddBookPictureViewControllerDelegate: AnyObject {
-  func addBookPictureTappedButton(_ vc: AddBookPictureViewController, didAdd picture: BookPictureModel)
+  func didTapAddButton(_ vc: AddBookPictureViewController, didAdd picture: BookPictureModel)
 }
 
 protocol UpdateBookPictureDelegate: AnyObject {
-  func updateBookPictureTappedButton(_ vc: AddBookPictureViewController, didUpdate picture: BookPictureModel, pictureID: String)
+  func didTapUpdateButton(_ vc: AddBookPictureViewController, didUpdate picture: BookPictureModel, pictureID: String)
 }
 
+// MARK: - Repository
 
 protocol BookPictureRepository: AnyObject {
   func fetchPictures() -> [BookPictureModel]
@@ -38,6 +41,8 @@ final class BookPictureRepositoryImpl: BookPictureRepository {
   }
 }
 
+// MARK: - View Model
+
 final class BookPictureViewModel {
   
   @Published var pictureViewModels: [BookPictureCell.ViewModel] = []
@@ -50,8 +55,7 @@ final class BookPictureViewModel {
   
   func loadPictures() {
     self.pictures = bookPictureRepository.fetchPictures()
-    let viewModels = convertToViewModels(pictures)
-    self.pictureViewModels = viewModels
+    self.pictureViewModels = convertToViewModels(self.pictures)
   }
   
   private func convertToViewModels(_ pictures: [BookPictureModel]) -> [BookPictureCell.ViewModel] {
@@ -68,22 +72,22 @@ final class BookPictureViewModel {
     }
   }
   
-  func addBookPictureTappedButton(addPicture: BookPictureModel) {
-    bookPictureRepository.saveBookPictureData(picture: addPicture) { [weak self] in
-      guard let self else { return }
-      
-      pictures.append(addPicture)
-      self.pictureViewModels = convertToViewModels(pictures)
-    }
-  }
-  
   func findPicture(by id: String) -> BookPictureModel? {
     pictures.first(where: { book in
       return book.id ==  id
     })
   }
   
-  func handleTapUpdateButton(updatedPicture: BookPictureModel, pictureID: String) {
+  func TappedAddButton(addPicture: BookPictureModel) {
+    bookPictureRepository.saveBookPictureData(picture: addPicture) { [weak self] in
+      guard let self else { return }
+      
+      pictures.append(addPicture)
+      self.pictureViewModels = convertToViewModels(self.pictures)
+    }
+  }
+  
+  func TappedUpdateButton(updatedPicture: BookPictureModel, pictureID: String) {
     guard let targetIndex = pictures.firstIndex(where: { book in book.id == pictureID }) else {
       return
     }
@@ -92,11 +96,11 @@ final class BookPictureViewModel {
       guard let self else { return }
       
       self.pictures[targetIndex] = updatedPicture
-      self.pictureViewModels = self.convertToViewModels(self.pictures)
+      self.pictureViewModels = convertToViewModels(self.pictures)
     }
   }
   
-  func handleTapDeleteButton(pictureID: String) {
+  func TappedDeleteButton(pictureID: String) {
     guard let targetPictureData = pictures.first(where: { book in book.id == pictureID }) else {
       return
     }
@@ -105,7 +109,7 @@ final class BookPictureViewModel {
       guard let self else { return }
       
       pictures.removeAll(where: { book in book.id == pictureID })
-      self.pictureViewModels = convertToViewModels(pictures)
+      self.pictureViewModels = convertToViewModels(self.pictures)
     }
   }
 }

@@ -18,13 +18,13 @@ final class 가짜_BookListRepository: BookListRepository {
   }
   
   var deleteBookDataCallCount = 0
-  func deleteBookData(data: BookProject.Book, completion: @escaping () -> Void) {
+  func deleteBookData(book: BookProject.Book, completion: @escaping () -> Void) {
     deleteBookDataCallCount += 1
     completion()
   }
   
   var updateBookDataCallCount = 0
-  func updateBookData(updateData: BookProject.Book, completion: @escaping () -> Void) {
+  func updateBookData(book: BookProject.Book, completion: @escaping () -> Void) {
     updateBookDataCallCount += 1
     completion()
   }
@@ -71,7 +71,7 @@ struct BookListViewModelTests {
     viewModel.delegate = delegate
     
     // when
-    viewModel.addBookTappedButton(addBook: Book(id: "id", bookTitle: "bookTitle", totalPage: 10, currentPage: 1))
+    viewModel.TappedAddButton(book: Book(id: "id", bookTitle: "bookTitle", totalPage: 10, currentPage: 1))
     
     // then
     #expect(bookListRepository.saveBookDataCallCount == 1)
@@ -97,7 +97,7 @@ struct BookListViewModelTests {
     viewModel.loadBooks()
     
     // when
-    viewModel.handleTapUpdateButton(updatedBook: secondBook, bookID: id)
+    viewModel.TappedUpdateButton(book: secondBook, bookID: id)
     
     // then
     #expect(bookListRepository.updateBookDataCallCount == 1)
@@ -121,7 +121,7 @@ struct BookListViewModelTests {
     viewModel.loadBooks()
     
     // when
-    viewModel.handleTapDeleteButton(bookID: id)
+    viewModel.TappedDeleteButton(bookID: id)
     
     // then
     #expect(bookListRepository.deleteBookDataCallCount == 1)

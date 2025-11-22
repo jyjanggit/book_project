@@ -72,7 +72,7 @@ struct BookPictureViewModelTests {
     viewModel.delegate = delegate
     
     // when
-    viewModel.addBookPictureTappedButton(addPicture: BookPictureModel(id: "id", booktTextpicture: UIImage(), memo: "memo", date: Date()))
+    viewModel.TappedAddButton(addPicture: BookPictureModel(id: "id", booktTextpicture: UIImage(), memo: "memo", date: Date()))
     
     // then
     #expect(bookPictureRepository.savePictureDataCallCount == 1)
@@ -98,7 +98,7 @@ struct BookPictureViewModelTests {
     viewModel.loadPictures()
     
     // when
-    viewModel.handleTapUpdateButton(updatedPicture: secondBook, pictureID: id)
+    viewModel.TappedUpdateButton(updatedPicture: secondBook, pictureID: id)
     
     // then
     #expect(bookPictureRepository.updatePictureDataCallCount == 1)
@@ -122,7 +122,7 @@ struct BookPictureViewModelTests {
     viewModel.loadPictures()
     
     // when
-    viewModel.handleTapDeleteButton(pictureID: id)
+    viewModel.TappedDeleteButton(pictureID: id)
     
     // then
     #expect(bookPictureRepository.deletePictureDataCallCount == 1)

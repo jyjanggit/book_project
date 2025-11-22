@@ -8,7 +8,25 @@ final class AddBookViewController: UIViewController {
   var bookEdit: Book?
   var bookID: String?
   
+  // MARK: - Life Cycle
+  
+  override func viewDidLoad() {
+    
+    super.viewDidLoad()
+    view.backgroundColor = UIColor(hex: "#FFFFFF")
+    
+    if let editBook = bookEdit {
+      titleTextField.text = editBook.bookTitle
+      totalTextField.text = "\(editBook.totalPage)"
+      currentTextField.text = "\(editBook.currentPage)"
+    }
+    
+    setupNavigationItem()
+    setupLayout()
+  }
+  
   // MARK: - ui
+  
   private let titleTextField: UITextField = {
     let text = UITextField()
     text.placeholder = "책 제목을 입력하세요"
@@ -45,7 +63,38 @@ final class AddBookViewController: UIViewController {
     return stack
   }()
   
+  // MARK: - setupNavigationItem
+  
+  private func setupNavigationItem() {
+    
+    navigationItem.title = bookEdit == nil ? "책 추가" : "책 수정"
+    
+    let cancelButton = UIBarButtonItem(
+      title: "취소",
+      style: .plain,
+      target: self,
+      action: #selector(cancelTapped)
+    )
+    cancelButton.accessibilityLabel = "입력 취소"
+    cancelButton.accessibilityHint = "입력을 취소하고 창을 닫습니다."
+    navigationItem.leftBarButtonItem = cancelButton
+    
+    let saveButton = UIBarButtonItem(
+      title: "저장",
+      style: .done,
+      target: self,
+      action: #selector(saveTapped)
+    )
+    saveButton.accessibilityLabel = "책 저장"
+    saveButton.accessibilityHint = "입력한 책 정보를 저장합니다."
+    navigationItem.rightBarButtonItem = saveButton
+    
+  }
+  
+  // MARK: - setupLayout
+  
   private func setupLayout() {
+    
     view.addSubview(textFieldStackView)
     
     textFieldStackView.snp.makeConstraints { make in
@@ -53,50 +102,18 @@ final class AddBookViewController: UIViewController {
       make.leading.equalTo(view).offset(16)
       make.trailing.equalTo(view).inset(16)
     }
-  }
-  
-  private func naviButton() {
-    navigationItem.leftBarButtonItem = UIBarButtonItem(
-      title: "취소",
-      style: .plain,
-      target: self,
-      action: #selector(cancelTapped)
-    )
-    navigationItem.leftBarButtonItem?.accessibilityHint = "입력을 취소하고 창을 닫습니다."
     
-    navigationItem.rightBarButtonItem = UIBarButtonItem(
-      title: "저장",
-      style: .done,
-      target: self,
-      action: #selector(saveTapped)
-    )
-    navigationItem.rightBarButtonItem?.accessibilityHint = "입력한 책 정보를 저장합니다."
   }
-  
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    view.backgroundColor = UIColor(hex: "#FFFFFF")
-    self.title = bookEdit == nil ? "책 추가" : "책 수정"
-    
-    if let editBook = bookEdit {
-      titleTextField.text = editBook.bookTitle
-      totalTextField.text = "\(editBook.totalPage)"
-      currentTextField.text = "\(editBook.currentPage)"
-    }
-    
-    naviButton()
-    setupLayout()
-  }
-  
-  
   
   // MARK: - 버튼동작
+  
   @objc private func cancelTapped() {
+    
     dismiss(animated: true)
+    
   }
   
   @objc private func saveTapped() {
-    
     
     guard let title = titleTextField.text, !title.isEmpty,
           let totalText = totalTextField.text, let total = Int(totalText),
@@ -116,13 +133,13 @@ final class AddBookViewController: UIViewController {
     
     // 만약 책 있으면(기존 책이면) 수정, 없으면 추가.
     if let bookID = bookID {
-      delegate?.updateBookTappedButton(self, didUpdate: book, bookID: bookID)
+      delegate?.didUpdateExistingBook(self, didUpdate: book, bookID: bookID)
     } else {
-      delegate?.addBookTappedButton(self, didAdd: book)
+      delegate?.didTapAddButton(self, didAdd: book)
     }
     dismiss(animated: true)
+    
   }
-  
   
 }
 

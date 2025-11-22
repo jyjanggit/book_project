@@ -8,6 +8,18 @@ final class BookPictureDetailViewController: UIViewController {
   
   private let scrollView = UIScrollView()
   
+  // MARK: - Life Cycle
+  
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    
+    setupNavigationItem()
+    setupLayout()
+    loadPictureData()
+  }
+  
+  // MARK: - ui
+  
   private let imageView: UIImageView = {
     let imageView = UIImageView()
     imageView.contentMode = .scaleAspectFill
@@ -52,32 +64,25 @@ final class BookPictureDetailViewController: UIViewController {
     return stack
   }()
   
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    view.backgroundColor = UIColor(hex: "#FFFFFF")
-    
-    setupLayout()
-    setupNavigationBar()
-    loadPictureData()
+  // MARK: - setupNavigationItem
+  
+  private func setupNavigationItem() {
+    navigationItem.rightBarButtonItem = UIBarButtonItem(
+      image: UIImage(systemName: "ellipsis.circle"),
+      style: .plain,
+      target: self,
+      action: #selector(moreButtonTapped)
+    )
+    navigationItem.rightBarButtonItem?.accessibilityLabel = "더 보기 메뉴"
+    navigationItem.rightBarButtonItem?.accessibilityHint = "책 구절의 수정 또는 삭제 메뉴를 엽니다."
   }
   
-  private func loadPictureData() {
-    guard let pictureID = pictureID,
-          let picture = viewModel?.findPicture(by: pictureID) else {
-      return
-    }
-    
-    imageView.image = picture.booktTextpicture
-    memoLabel.text = picture.memo
-    memoLabel.accessibilityValue = picture.memo
-    
-    let formatter = DateFormatter()
-    formatter.dateFormat = "yyyy년 MM월 dd일"
-    dateLabel.text = formatter.string(from: picture.date)
-    dateLabel.accessibilityValue = dateLabel.text
-  }
+  // MARK: - setupLayout
   
   private func setupLayout() {
+    
+    view.backgroundColor = UIColor(hex: "#FFFFFF")
+    
     view.addSubview(scrollView)
     scrollView.addSubview(mainStackView)
     
@@ -95,19 +100,31 @@ final class BookPictureDetailViewController: UIViewController {
     imageView.snp.makeConstraints { make in
       make.height.equalTo(imageView.snp.width)
     }
+    
   }
   
-  private func setupNavigationBar() {
-    navigationItem.rightBarButtonItem = UIBarButtonItem(
-      image: UIImage(systemName: "ellipsis.circle"),
-      style: .plain,
-      target: self,
-      action: #selector(moreButtonTapped)
-    )
-    navigationItem.rightBarButtonItem?.accessibilityLabel = "더 보기 메뉴"
-    navigationItem.rightBarButtonItem?.accessibilityHint = "책 구절의 수정 또는 삭제 메뉴를 엽니다."
+  // MARK: - loadPictureData
+  
+  private func loadPictureData() {
+    
+    guard let pictureID = pictureID,
+          let picture = viewModel?.findPicture(by: pictureID) else {
+      return
+    }
+    
+    imageView.image = picture.booktTextpicture
+    memoLabel.text = picture.memo
+    memoLabel.accessibilityValue = picture.memo
+    
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy년 MM월 dd일"
+    dateLabel.text = formatter.string(from: picture.date)
+    dateLabel.accessibilityValue = dateLabel.text
+    
   }
   
+  // MARK: - 버튼동작
+
   @objc private func moreButtonTapped() {
     let alert = UIAlertController(
       title: nil,
@@ -145,6 +162,7 @@ final class BookPictureDetailViewController: UIViewController {
   }
   
   @objc private func pictureUpdateButtonTapped() {
+    
     guard let pictureID = pictureID,
           let picture = viewModel?.findPicture(by: pictureID) else {
       return
@@ -161,6 +179,7 @@ final class BookPictureDetailViewController: UIViewController {
   }
   
   @objc private func pictureDeleteButtonTapped() {
+    
     guard let pictureID = pictureID else { return }
     
     let alert = UIAlertController(
@@ -171,18 +190,23 @@ final class BookPictureDetailViewController: UIViewController {
     
     alert.addAction(UIAlertAction(title: "취소", style: .cancel))
     alert.addAction(UIAlertAction(title: "삭제", style: .destructive) { _ in
-      self.viewModel?.handleTapDeleteButton(pictureID: pictureID)
+      self.viewModel?.TappedDeleteButton(pictureID: pictureID)
       self.navigationController?.popViewController(animated: true)
     })
     
     present(alert, animated: true)
+    
   }
 }
 
+
+// MARK: - UpdateBookPictureDelegate
+
 extension BookPictureDetailViewController: UpdateBookPictureDelegate {
   
-  func updateBookPictureTappedButton(_ vc: AddBookPictureViewController, didUpdate picture: BookPictureModel, pictureID: String) {
-    viewModel?.handleTapUpdateButton(updatedPicture: picture, pictureID: pictureID)
+  func didTapUpdateButton(_ vc: AddBookPictureViewController, didUpdate picture: BookPictureModel, pictureID: String) {
+    viewModel?.TappedUpdateButton(updatedPicture: picture, pictureID: pictureID)
     loadPictureData()
   }
+  
 }

@@ -2,7 +2,8 @@ import UIKit
 import Alamofire
 import Combine
 
-// 네트워크, 에러 담당
+// MARK: - 네트워크 관련
+
 enum NetworkError: Error {
   case networkingError
   case dataError
@@ -40,17 +41,7 @@ struct BookSearchResult: Codable {
   }
 }
 
-//protocol Cancellation {
-//  func cancelTask()
-//}
-//
-//extension DataRequest: Cancellation {
-//  func cancelTask() {
-//    if isFinished == false {
-//      cancel()
-//    }
-//  }
-//}
+// MARK: - Repository
 
 protocol BookSearchRepository: AnyObject {
   func fetchData(searchText: String) -> AnyPublisher<BookResponse, NetworkError>
@@ -73,6 +64,7 @@ final class BookSearchRepositoryImpl: BookSearchRepository {
   }
 }
 
+// MARK: - Networking
 
 final class Networking {
   
@@ -135,22 +127,17 @@ final class Networking {
   }
 }
 
-protocol BookSearchViewModelDelegate: AnyObject {
-  func reloadData(items:[BookSearchViewController.Item])
-}
+// MARK: - BookSearchViewModel
 
 final class BookSearchViewModel {
   
   @Published var searchResults: [BookSearchViewController.Item] = []
-  
   private var searchCancellable: AnyCancellable?
-  
   private let bookSearchRepository: BookSearchRepository
   
   init(bookSearchRepository: BookSearchRepository = BookSearchRepositoryImpl()) {
     self.bookSearchRepository = bookSearchRepository
   }
-  
   
   func searchBarSearchButtonTapped(query: String) {
     searchCancellable?.cancel()
@@ -168,7 +155,6 @@ final class BookSearchViewModel {
         self?.searchResults = self?.convertToViewModels(bookResponse.item) ?? []
       })
   }
-  
   
   private func convertToViewModels(_ bookResults: [BookSearchResult]) -> [BookSearchViewController.Item] {
     return bookResults.map { book in

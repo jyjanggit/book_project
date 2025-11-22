@@ -21,7 +21,33 @@ final class BookPictureViewController: UIViewController {
   private var viewModel = BookPictureViewModel(bookPictureRepository: BookPictureRepositoryImpl())
   private var cancellables = Set<AnyCancellable>()
   
-  // MARK: - UI
+  // MARK: - Life Cycle
+  
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    
+    setupNavigationItem()
+    setupCollectionView()
+    setupLayout()
+    setupDataSource()
+    bindViewModel()
+    viewModel.loadPictures()
+  }
+  
+  // MARK: - setupNavigationItem
+  
+  private func setupNavigationItem() {
+    let addButton = UIBarButtonItem(barButtonSystemItem: .add,
+                                    target: self,
+                                    action: #selector(didTapAdd))
+    navigationItem.rightBarButtonItem = addButton
+    addButton.accessibilityLabel = "책 구절 추가"
+    addButton.accessibilityHint = "책의 구절 사진과 메모를 추가 할 수 있습니다."
+    
+    navigationItem.title = "책 구절"
+  }
+  
+  // MARK: - setupCollectionView
   private func setupCollectionView() {
     let layout = UICollectionViewCompositionalLayout { _, _ in
       let itemSize = NSCollectionLayoutSize(
@@ -57,36 +83,13 @@ final class BookPictureViewController: UIViewController {
     collectionView.register(BookPictureCell.self, forCellWithReuseIdentifier: BookPictureCellConstants.bookPictureIdentifier)
   }
   
-  private func naviButton() {
-    let addButton = UIBarButtonItem(barButtonSystemItem: .add,
-                                    target: self,
-                                    action: #selector(didTapAdd))
-    navigationItem.rightBarButtonItem = addButton
-    addButton.accessibilityLabel = "책 구절 추가"
-    addButton.accessibilityHint = "책의 구절 사진과 메모를 추가 할 수 있습니다."
-  }
+  // MARK: - setupLayout
   
-  override func viewDidLoad() {
-    super.viewDidLoad()
+  private func setupLayout() {
     view.backgroundColor = UIColor(hex: "#FFFFFF")
-    self.title = "책 구절"
-    naviButton()
-    setupCollectionView()
-    setupDataSource()
-    viewModel.loadPictures()
-    bindViewModel()
   }
   
-  private func bindViewModel() {
-    viewModel.$pictureViewModels
-      .receive(on: DispatchQueue.main)
-      .sink { [weak self] picture in
-        self?.applySnapshot(items: picture.map { pictureViewModel in
-          Item(viewModel: pictureViewModel)
-        })
-      }
-      .store(in: &cancellables)
-  }
+  // MARK: - setupDataSource
   
   private func setupDataSource() {
     dataSource = UICollectionViewDiffableDataSource<Section, Item>(collectionView: collectionView) { collectionView, indexPath, item in
@@ -101,15 +104,22 @@ final class BookPictureViewController: UIViewController {
       return cell
     }
   }
+
+  // MARK: - bindViewModel
   
-  private func applySnapshot(items: [Item], animated: Bool = true) {
-    var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
-    snapshot.appendSections([.main])
-    snapshot.appendItems(items, toSection: .main)
-    dataSource.apply(snapshot, animatingDifferences: animated)
+  private func bindViewModel() {
+    viewModel.$pictureViewModels
+      .receive(on: DispatchQueue.main)
+      .sink { [weak self] picture in
+        self?.applySnapshot(items: picture.map { pictureViewModel in
+          Item(viewModel: pictureViewModel)
+        })
+      }
+      .store(in: &cancellables)
   }
   
   // MARK: - 버튼동작
+  
   @objc private func didTapAdd() {
     let addBookPictureViewController = AddBookPictureViewController()
     addBookPictureViewController.delegate = self
@@ -121,17 +131,27 @@ final class BookPictureViewController: UIViewController {
     }
     present(navViewController, animated: true)
   }
-}
-
-// MARK: - 델리게이트
-extension BookPictureViewController: AddBookPictureViewControllerDelegate {
   
-  func addBookPictureTappedButton(_ vc: AddBookPictureViewController, didAdd picture: BookPictureModel) {
-    viewModel.addBookPictureTappedButton(addPicture: picture)
+  // MARK: - Private Mathods
+  
+  private func applySnapshot(items: [Item], animated: Bool = true) {
+    var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
+    snapshot.appendSections([.main])
+    snapshot.appendItems(items, toSection: .main)
+    dataSource.apply(snapshot, animatingDifferences: animated)
   }
 }
 
+// MARK: - AddBookPictureViewControllerDelegate
 
+extension BookPictureViewController: AddBookPictureViewControllerDelegate {
+  
+  func didTapAddButton(_ vc: AddBookPictureViewController, didAdd picture: BookPictureModel) {
+    viewModel.TappedAddButton(addPicture: picture)
+  }
+}
+
+// MARK: - UICollectionViewDelegate
 
 extension BookPictureViewController: UICollectionViewDelegate {
   func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {

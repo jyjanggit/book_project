@@ -2,6 +2,7 @@ import UIKit
 import SnapKit
 
 // MARK: - 반원 차트
+
 final class ChartView: UIView {
   
   var readValue = CGFloat() {
@@ -64,12 +65,55 @@ final class ChartView: UIView {
   }
 }
 
-
-
 final class BookListCell: UICollectionViewCell {
   
+  weak var updateDelegate: BookListCellUpdateDelegate?
+  weak var deleteDelegate: BookListCellDeleteDelegate?
+  var bookID: String?
+  
+  struct ViewModel: Equatable {
+    let id: String
+    let title: String
+    let currentPage: String
+    let totalPage: String
+    let chartReadValue: CGFloat
+  }
+  
+  // MARK: - configure
+  
+  func configure(viewModel: ViewModel) {
+    bookID = viewModel.id
+    titleLabel.text = viewModel.title
+    currentPageLabel.text = viewModel.currentPage
+    currentPageLabel.accessibilityLabel = "현재 읽은 페이지: \(viewModel.currentPage) 페이지"
+    totalPageLabel.text = viewModel.totalPage
+    totalPageLabel.accessibilityLabel = "책의 총 페이지: \(viewModel.totalPage) 페이지"
+    chartView.readValue = viewModel.chartReadValue
+  }
+  
+  // MARK: - Life Cycle
+  
+  override init(frame: CGRect) {
+    super.init(frame: frame)
+    
+    setupButtonActions()
+    setupLayout()
+  }
   
   // MARK: - ui
+  
+  private let containerView: UIView = {
+    let view = UIView()
+    view.layer.shadowColor = UIColor(hex: "#181818").cgColor
+    view.layer.shadowOpacity = 0.2
+    view.layer.shadowOffset = CGSize(width: 0, height: 2)
+    view.layer.shadowRadius = 4
+    view.layer.masksToBounds = false
+    view.backgroundColor = .white
+    view.layer.cornerRadius = 10
+    return view
+  }()
+  
   private let titleLabel: UILabel = {
     let label = UILabel()
     label.numberOfLines = 1
@@ -79,6 +123,8 @@ final class BookListCell: UICollectionViewCell {
     label.accessibilityTraits = .header
     return label
   }()
+  
+  private let chartParentsView: UIView = UIView()
   
   private let chartView: ChartView = {
     let view = ChartView()
@@ -90,8 +136,6 @@ final class BookListCell: UICollectionViewCell {
     UIImageView(image: UIImage(systemName: "book"))
   }()
   
-  private let chartParentsView: UIView = UIView()
-  
   private let currentPageLabel: UILabel = {
     let label = UILabel()
     label.applyBoldCommonStyle()
@@ -102,6 +146,15 @@ final class BookListCell: UICollectionViewCell {
     let label = UILabel()
     label.applyCommonStyle()
     return label
+  }()
+  
+  private lazy var pageStackView: UIStackView = {
+    let stack = UIStackView(arrangedSubviews: [currentPageLabel, totalPageLabel])
+    stack.axis = .horizontal
+    stack.spacing = 0
+    stack.alignment = .center
+    stack.distribution = .equalSpacing
+    return stack
   }()
   
   private let updateButton: UIButton = {
@@ -122,15 +175,6 @@ final class BookListCell: UICollectionViewCell {
     return button
   }()
   
-  private lazy var pageStackView: UIStackView = {
-    let stack = UIStackView(arrangedSubviews: [currentPageLabel, totalPageLabel])
-    stack.axis = .horizontal
-    stack.spacing = 0
-    stack.alignment = .center
-    stack.distribution = .equalSpacing
-    return stack
-  }()
-  
   private lazy var buttonStackView: UIStackView = {
     let stack = UIStackView(arrangedSubviews: [updateButton, deleteButton])
     stack.axis = .horizontal
@@ -149,20 +193,19 @@ final class BookListCell: UICollectionViewCell {
     return stack
   }()
   
+  required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
   
-  private let containerView: UIView = {
-    let view = UIView()
-    view.layer.shadowColor = UIColor(hex: "#181818").cgColor
-    view.layer.shadowOpacity = 0.2
-    view.layer.shadowOffset = CGSize(width: 0, height: 2)
-    view.layer.shadowRadius = 4
-    view.layer.masksToBounds = false
-    view.backgroundColor = .white
-    view.layer.cornerRadius = 10
-    return view
-  }()
+  // MARK: - setupButtonActions
+   
+   private func setupButtonActions() {
+     updateButton.addTarget(self, action: #selector(updateButtonTapped), for: .touchUpInside)
+     deleteButton.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
+   }
   
-  // MARK: - 레이아웃 불러오는 함수
+  // MARK: - setupLayout
+  
   private func setupLayout() {
     contentView.addSubview(containerView)
     containerView.addSubview(titleLabel)
@@ -170,13 +213,13 @@ final class BookListCell: UICollectionViewCell {
     chartParentsView.addSubview(chartView)
     chartParentsView.addSubview(bookImageView)
     
+    containerView.snp.makeConstraints { make in
+      make.edges.equalToSuperview()
+    }
+    
     titleLabel.snp.makeConstraints { make in
       make.top.leading.trailing.equalToSuperview().inset(16)
       make.bottom.equalTo(mainStackView.snp.top).offset(-16)
-    }
-    
-    containerView.snp.makeConstraints { make in
-      make.edges.equalToSuperview()
     }
     
     mainStackView.snp.makeConstraints { make in
@@ -197,50 +240,10 @@ final class BookListCell: UICollectionViewCell {
       make.size.equalTo(CGSize(width: 40, height: 40))
       make.bottom.centerX.equalToSuperview()
     }
-    
   }
   
-  override init(frame: CGRect) {
-    super.init(frame: frame)
-    
-    updateButton.addTarget(self, action: #selector(updateButtonTapped), for: .touchUpInside)
-    deleteButton.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
-    setupLayout()
-  }
+  // MARK: - 버튼동작
   
-  required init?(coder: NSCoder) {
-    fatalError("init(coder:) has not been implemented")
-  }
-  
-  
-  
-  weak var updateDelegate: BookListCellUpdateDelegate?
-  weak var deleteDelegate: BookListCellDeleteDelegate?
-  var bookID: String?
-  
-  struct ViewModel: Equatable {
-    
-    let id: String
-    let title: String
-    let currentPage: String
-    let totalPage: String
-    let chartReadValue: CGFloat
-  }
-  
-  
-  
-  
-  func configure(viewModel: ViewModel) {
-    bookID = viewModel.id
-    titleLabel.text = viewModel.title
-    currentPageLabel.text = viewModel.currentPage
-    currentPageLabel.accessibilityLabel = "현재 읽은 페이지: \(viewModel.currentPage) 페이지"
-    totalPageLabel.text = viewModel.totalPage
-    totalPageLabel.accessibilityLabel = "책의 총 페이지: \(viewModel.totalPage) 페이지"
-    chartView.readValue = viewModel.chartReadValue
-  }
-  
-  // MARK: - 셀 내부 버튼 클릭 시 동작
   @objc private func updateButtonTapped() {
     guard let bookID else { return }
     updateDelegate?.didTapUpdateButton(bookID: bookID)
@@ -249,12 +252,11 @@ final class BookListCell: UICollectionViewCell {
   @objc private func deleteButtonTapped() {
     guard let bookID else { return }
     deleteDelegate?.didTapDeleteButton(bookID: bookID)
-    
   }
   
+  // MARK: - preferredLayoutAttributesFitting
   
   override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
-    
     let targetSize = CGSize(width: layoutAttributes.size.width, height: 0.0)
     
     let size = contentView.systemLayoutSizeFitting(targetSize,
