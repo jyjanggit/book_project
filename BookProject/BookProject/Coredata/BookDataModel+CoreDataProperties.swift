@@ -21,7 +21,7 @@ extension BookDataModel {
   @NSManaged public var totalPage: Int16
   @NSManaged public var currentPage: Int16
   @NSManaged public var percentage: Double
-  @NSManaged public var createdAt: Date
+  @NSManaged public var date: Date
   
   
 }

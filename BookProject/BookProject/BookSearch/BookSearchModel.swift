@@ -5,7 +5,6 @@ struct BookSearchModel {
   var cover: String
   var title: String
   var author: String
-  
 }
 
 extension BookSearchModel {

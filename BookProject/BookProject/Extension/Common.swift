@@ -2,11 +2,6 @@ import UIKit
 
 extension UILabel {
   
-  //  struct TextStyle {
-  //    let commonFont = UIFont.systemFont(ofSize: 24)
-  //    let boldFont = UIFont.boldSystemFont(ofSize: 24)
-  //  }
-  
   func applyCommonStyle() {
     self.font = UIFont.systemFont(ofSize: 24)
     self.textColor = UIColor(hex: "#595c60")

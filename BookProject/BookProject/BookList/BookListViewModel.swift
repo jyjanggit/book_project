@@ -8,9 +8,11 @@
 import UIKit
 import Combine
 
+// MARK: - Delegate
+
 protocol AddBookViewControllerDelegate: AnyObject {
-  func addBookTappedButton(_ vc: AddBookViewController, didAdd book: Book)
-  func updateBookTappedButton(_ vc: AddBookViewController, didUpdate book: Book, bookID: String)
+  func didTapAddButton(_ vc: AddBookViewController, didAdd book: Book)
+  func didUpdateExistingBook(_ vc: AddBookViewController, didUpdate book: Book, bookID: String)
 }
 
 protocol BookListCellUpdateDelegate: AnyObject {
@@ -24,10 +26,11 @@ protocol BookListCellDeleteDelegate: AnyObject {
 protocol BookListRepository: AnyObject {
   func fetchBooks() -> [Book]
   func saveBookData(book: Book, completion: @escaping () -> Void)
-  func deleteBookData(data: Book, completion: @escaping () -> Void)
-  func updateBookData(updateData: Book, completion: @escaping () -> Void)
+  func updateBookData(book: Book, completion: @escaping () -> Void)
+  func deleteBookData(book: Book, completion: @escaping () -> Void)
 }
 
+// MARK: - Repository
 
 final class BookListRepositoryImpl: BookListRepository {
   
@@ -44,21 +47,22 @@ final class BookListRepositoryImpl: BookListRepository {
     }
   }
   
-  
   func saveBookData(book: Book, completion: @escaping () -> Void) {
     coreDataManager.saveBookData(book: book, completion: completion)
   }
   
-  func updateBookData(updateData: Book, completion: @escaping () -> Void) {
-    coreDataManager.updateBookData(updateData: updateData, completion: completion)
+  func updateBookData(book: Book, completion: @escaping () -> Void) {
+    coreDataManager.updateBookData(updateData: book, completion: completion)
   }
   
-  func deleteBookData(data: Book, completion: @escaping () -> Void) {
-    coreDataManager.deleteBookData(data: data, completion: completion)
+  func deleteBookData(book: Book, completion: @escaping () -> Void) {
+    coreDataManager.deleteBookData(data: book, completion: completion)
   }
+  
 }
 
 
+// MARK: - View Model
 
 final class BookListViewModel {
   
@@ -73,7 +77,7 @@ final class BookListViewModel {
   // 데이터 호출(코어데이터에서)
   func loadBooks() {
     self.books = bookListRepository.fetchBooks()
-    let bookViewModels = convertToViewModels(books)
+    self.bookViewModels = convertToViewModels(self.books)
   }
   
   // ui가 사용할 수 있도록 변환해줌
@@ -89,48 +93,55 @@ final class BookListViewModel {
     }
   }
   
-
+  // 아이디로 책 찾기
+  func findBook(by id: String) -> Book? {
+    
+    books.first(where: { book in
+      return book.id == id
+    })
+    
+  }
+  
   // 책 추가
-  func addBookTappedButton(addBook: Book) {
-    bookListRepository.saveBookData(book: addBook) { [weak self] in
+  func TappedAddButton(book: Book) {
+    
+    bookListRepository.saveBookData(book: book) { [weak self] in
       guard let self else {
         return
       }
       
-      books.append(addBook)
-      self.bookViewModels = convertToViewModels(books)
+      books.append(book)
+      self.bookViewModels = convertToViewModels(self.books)
     }
+    
   }
-  
-  func findBook(by id: String) -> Book? {
-    books.first(where: { book in
-      return book.id == id
-    })
-  }
-  
+
   // 책 수정
-  func handleTapUpdateButton(updatedBook: Book, bookID: String) {
+  func TappedUpdateButton(book: Book, bookID: String) {
+    
     guard let targetIndex = books.firstIndex(where: { book in book.id == bookID }) else {
       return
     }
     
-    bookListRepository.updateBookData(updateData: updatedBook) { [weak self] in
+    bookListRepository.updateBookData(book: book) { [weak self] in
       guard let self else {
         return
       }
       
-      self.books[targetIndex] = updatedBook
+      self.books[targetIndex] = book
       self.bookViewModels = convertToViewModels(books)
     }
+    
   }
   
   // 책 삭제
-  func handleTapDeleteButton(bookID: String) {
+  func TappedDeleteButton(bookID: String) {
+    
     guard let targetBookData = books.first(where: { book in book.id == bookID }) else {
       return
     }
     
-    bookListRepository.deleteBookData(data: targetBookData) { [weak self] in
+    bookListRepository.deleteBookData(book: targetBookData) { [weak self] in
       guard let self else {
         return
       }
@@ -138,5 +149,6 @@ final class BookListViewModel {
       self.books.removeAll(where: { book in book.id == bookID })
       self.bookViewModels = convertToViewModels(books)
     }
+    
   }
 }

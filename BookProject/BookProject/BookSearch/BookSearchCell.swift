@@ -4,6 +4,7 @@ import Alamofire
 
 final class BookSearchCell: UICollectionViewCell {
   
+  private var imageRequest: DataRequest?
   
   struct ViewModel: Hashable {
     var itemId: String
@@ -12,7 +13,7 @@ final class BookSearchCell: UICollectionViewCell {
     var author: String
   }
   
-  private var imageRequest: DataRequest?
+  // MARK: - configure
   
   func configure(viewModel: ViewModel) {
     titleLabel.text = viewModel.title
@@ -22,6 +23,16 @@ final class BookSearchCell: UICollectionViewCell {
     authorLabel.text = viewModel.author
     authorLabel.accessibilityLabel = "책 저자: \(viewModel.author)"
   }
+  
+  // MARK: - Life Cycle
+  
+  override init(frame: CGRect) {
+    super.init(frame: frame)
+    
+    setupLayout()
+  }
+  
+  // MARK: - ui
   
   private let bookImageView: UIImageView = {
     let imageView = UIImageView()
@@ -34,7 +45,7 @@ final class BookSearchCell: UICollectionViewCell {
     let label = UILabel()
     label.applyBoldCommonStyle16()
     label.numberOfLines = 1
-    //label.text = "여기는 책 제목을 받아오는 칸입니다"
+    label.text = "여기는 책 제목을 받아오는 칸입니다"
     return label
   }()
   
@@ -63,11 +74,8 @@ final class BookSearchCell: UICollectionViewCell {
     return stack
   }()
   
-  
-  
   private func setupLayout() {
     contentView.addSubview(searchCellStackView)
-    
     
     searchCellStackView.snp.makeConstraints { make in
       make.top.equalToSuperview().offset(16)
@@ -84,18 +92,13 @@ final class BookSearchCell: UICollectionViewCell {
     textStackView.snp.makeConstraints { make in
       make.leading.equalTo(bookImageView.snp.trailing).offset(16)
     }
-    
   }
-  
-  override init(frame: CGRect) {
-    super.init(frame: frame)
-    
-    setupLayout()
-  }
-  
+
   required init?(coder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
   }
+  
+  // MARK: - prepareForReuse
   
   override func prepareForReuse() {
     super.prepareForReuse()
@@ -104,8 +107,7 @@ final class BookSearchCell: UICollectionViewCell {
     }
   }
   
-  
-  
+  // MARK: - preferredLayoutAttributesFitting
   
   override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
     
@@ -119,9 +121,9 @@ final class BookSearchCell: UICollectionViewCell {
     newLayoutAttributes.size = CGSize(width: layoutAttributes.size.width, height: ceil(size.height))
     return newLayoutAttributes
   }
-  
 }
 
+// MARK: - extension UIImageView
 
 // 이미지 url로 받아오기
 extension UIImageView {

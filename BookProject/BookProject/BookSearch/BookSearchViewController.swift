@@ -9,7 +9,6 @@ import UIKit
 import SnapKit
 import Combine
 
-
 final class BookSearchViewController: UIViewController {
   
   private typealias DataSource = UICollectionViewDiffableDataSource<Section, Item>
@@ -22,18 +21,26 @@ final class BookSearchViewController: UIViewController {
     func hash(into hasher: inout Hasher) {
       hasher.combine(viewModel.itemId)
     }
-    
   }
+  
   private var dataSource: DataSource!
-  
-  
   private var collectionView: UICollectionView!
   private var viewModel = BookSearchViewModel(bookSearchRepository: BookSearchRepositoryImpl())
   private var cancellables = Set<AnyCancellable>()
 
+  // MARK: - Life Cycle
   
-  
-  
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    
+    setupCollectionView()
+    setupLayout()
+    setupDataSource()
+    bindViewModel()
+  }
+
+  // MARK: - ui
+
   private let uISearchController: UISearchController = {
     let uISearchController = UISearchController(searchResultsController: nil)
     uISearchController.obscuresBackgroundDuringPresentation = false
@@ -42,6 +49,8 @@ final class BookSearchViewController: UIViewController {
     uISearchController.searchBar.returnKeyType = .search
     return uISearchController
   }()
+  
+  // MARK: - setupCollectionView
   
   private func setupCollectionView() {
     let layout = UICollectionViewCompositionalLayout {_,_ in
@@ -64,7 +73,6 @@ final class BookSearchViewController: UIViewController {
       return section
     }
     
-    
     collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
     collectionView.backgroundColor = UIColor(hex: "#FFFFFF")
     
@@ -73,22 +81,24 @@ final class BookSearchViewController: UIViewController {
     collectionView.snp.makeConstraints { make in
       make.edges.equalTo(view.safeAreaLayoutGuide)
     }
-    
     collectionView.register(BookSearchCell.self, forCellWithReuseIdentifier: "SearchListCell")
   }
   
+  // MARK: - setupLayout
+  
   private func setupLayout() {
+    view.backgroundColor = UIColor(hex: "#FFFFFF")
+    
     uISearchController.searchBar.delegate = self
     
     navigationItem.searchController = uISearchController
     navigationItem.hidesSearchBarWhenScrolling = false
+    navigationItem.title = "책 검색"
     
     definesPresentationContext = true
   }
   
-  
-  
-  
+  // MARK: - setupDataSource
   
   private func setupDataSource() {
     dataSource = UICollectionViewDiffableDataSource<
@@ -107,27 +117,7 @@ final class BookSearchViewController: UIViewController {
     }
   }
   
-  
-  private func applySnapshot(items: [Item], animated: Bool = true) {
-    var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
-    snapshot.appendSections([.main])
-    snapshot.appendItems(items, toSection: .main)
-    dataSource.apply(snapshot, animatingDifferences: animated)
-  }
-  
-  
-  
-  
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    view.backgroundColor = UIColor(hex: "#FFFFFF")
-    self.title = "책 검색"
-    bindViewModel()
-    setupCollectionView()
-    setupLayout()
-    setupDataSource()
-  }
-  
+  // MARK: - bindViewModel
   
   private func bindViewModel() {
     viewModel.$searchResults
@@ -135,13 +125,19 @@ final class BookSearchViewController: UIViewController {
       .sink { [weak self] search in
         self?.applySnapshot(items: search, animated: true)
       }.store(in: &cancellables)
-
   }
   
+  // MARK: - Private Mathods
+  
+  private func applySnapshot(items: [Item], animated: Bool = true) {
+    var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
+    snapshot.appendSections([.main])
+    snapshot.appendItems(items, toSection: .main)
+    dataSource.apply(snapshot, animatingDifferences: animated)
+  }
 }
 
-
-
+// MARK: - UISearchBarDelegate
 
 extension BookSearchViewController: UISearchBarDelegate {
   func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {

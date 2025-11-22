@@ -10,6 +10,24 @@ final class AddBookPictureViewController: UIViewController {
   var pictureID: String?
   var selectedImage: UIImage?
   
+  // MARK: - Life Cycle
+  
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    
+    if let editPicture = pictureEdit {
+      imageView.image = editPicture.booktTextpicture
+      selectedImage = editPicture.booktTextpicture
+      memoTextField.text = editPicture.memo
+    }
+    
+    setupNavigationItem()
+    setupLayout()
+    setupAction()
+  }
+  
+  // MARK: - ui
+  
   private let imageView: UIImageView = {
     let imageView = UIImageView()
     imageView.contentMode = .scaleAspectFill
@@ -57,7 +75,41 @@ final class AddBookPictureViewController: UIViewController {
     return stack
   }()
   
+  // MARK: - setupNavigationItem
+  
+  private func setupNavigationItem() {
+    
+    navigationItem.title = pictureEdit == nil ? "책 구절 추가" : "책 구절 수정"
+    
+    let cancelButton = UIBarButtonItem(
+        title: "취소",
+        style: .plain,
+        target: self,
+        action: #selector(cancelTapped)
+    )
+    cancelButton.accessibilityLabel = "취소"
+    cancelButton.accessibilityHint = "입력을 취소하고 창을 닫습니다."
+    navigationItem.leftBarButtonItem = cancelButton
+
+
+    let saveButton = UIBarButtonItem(
+        title: "저장",
+        style: .done,
+        target: self,
+        action: #selector(saveTapped)
+    )
+    saveButton.accessibilityLabel = "저장"
+    saveButton.accessibilityHint = "현재 내용을 저장합니다."
+    navigationItem.rightBarButtonItem = saveButton
+
+  }
+  
+  // MARK: - setupLayout
+  
   private func setupLayout() {
+    
+    view.backgroundColor = UIColor(hex: "#FFFFFF")
+    
     view.addSubview(mainStackView)
     
     imageView.snp.makeConstraints { make in
@@ -73,45 +125,15 @@ final class AddBookPictureViewController: UIViewController {
     }
   }
   
-  private func naviButton() {
-    navigationItem.leftBarButtonItem = UIBarButtonItem(
-      title: "취소",
-      style: .plain,
-      target: self,
-      action: #selector(cancelTapped)
-    )
-    navigationItem.leftBarButtonItem?.accessibilityHint = "입력을 취소하고 창을 닫습니다."
-    
-    navigationItem.rightBarButtonItem = UIBarButtonItem(
-      title: "저장",
-      style: .done,
-      target: self,
-      action: #selector(saveTapped)
-    )
-    navigationItem.rightBarButtonItem?.accessibilityHint = "현재 내용을 저장합니다."
-  }
+  // MARK: - 버튼동작
   
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    
-    view.backgroundColor = UIColor(hex: "#FFFFFF")
-    self.title = pictureEdit == nil ? "책 구절 추가" : "책 구절 수정"
-    
-    if let editPicture = pictureEdit {
-      imageView.image = editPicture.booktTextpicture
-      selectedImage = editPicture.booktTextpicture
-      memoTextField.text = editPicture.memo
-    }
-    
+  private func setupAction() {
     photoButton.addTarget(self, action: #selector(photoButtonTapped), for: .touchUpInside)
     
     let tapGesture = UITapGestureRecognizer(target: self, action: #selector(imageViewTapped))
     imageView.addGestureRecognizer(tapGesture)
-    
-    naviButton()
-    setupLayout()
   }
-  
+
   @objc private func imageViewTapped() {
     photoButtonTapped()
   }
@@ -122,7 +144,7 @@ final class AddBookPictureViewController: UIViewController {
     picker.sourceType = .photoLibrary
     present(picker, animated: true)
   }
-  
+
   @objc private func cancelTapped() {
     dismiss(animated: true)
   }
@@ -143,9 +165,9 @@ final class AddBookPictureViewController: UIViewController {
     )
     
     if let pictureID = pictureID {
-      updatedelegate?.updateBookPictureTappedButton(self, didUpdate: picture, pictureID: pictureID)
+      updatedelegate?.didTapUpdateButton(self, didUpdate: picture, pictureID: pictureID)
     } else {
-      delegate?.addBookPictureTappedButton(self, didAdd: picture)
+      delegate?.didTapAddButton(self, didAdd: picture)
     }
     
     dismiss(animated: true)
@@ -158,7 +180,10 @@ final class AddBookPictureViewController: UIViewController {
   }
 }
 
+// MARK: - UIImagePickerControllerDelegate, UINavigationControllerDelegate
+
 extension AddBookPictureViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+  
   func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
     if let image = info[.originalImage] as? UIImage {
       imageView.image = image
@@ -166,4 +191,5 @@ extension AddBookPictureViewController: UIImagePickerControllerDelegate, UINavig
     }
     picker.dismiss(animated: true)
   }
+  
 }

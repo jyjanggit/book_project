@@ -10,9 +10,9 @@ import CoreData
 
 final class CoredataPictureManager {
   
+  // 싱글톤 객체
   static let shared = CoredataPictureManager()
   private init() {}
-  // 싱글톤 객체
   
   // 앱델리게이트
   private let appDelegate = UIApplication.shared.delegate as? AppDelegate
@@ -23,7 +23,7 @@ final class CoredataPictureManager {
   // 엔티티 이름
   private let modelName: String = "BookPictureDataModel"
   
-  // 코어데이터 저장 데이터 읽어오기
+  // MARK: - Read
   func getBookPictureListFromCoreData() -> [BookPictureModel] {
     var bookPictureList: [BookPictureModel] = []
     
@@ -57,7 +57,8 @@ final class CoredataPictureManager {
     return bookPictureList
   }
   
-  // 코어데이터에 생성하기
+  // MARK: - Save
+  
   func saveBookPictureData(picture: BookPictureModel, completion: @escaping () -> Void ) {
     
     if let context = context {
@@ -80,28 +81,8 @@ final class CoredataPictureManager {
     completion()
   }
   
-  // 데이터 삭제하기
-  func deleteBookPictureData(data: BookPictureModel, completion: @escaping () -> Void) {
-    if let context = context {
-      let request = NSFetchRequest<NSManagedObject>(entityName: self.modelName)
-      request.predicate = NSPredicate(format: "id == %@", data.id)
-      
-      do {
-        if let fetchedBookPictureList = try context.fetch(request) as? [BookPictureDataModel] {
-          if let targetBookPicture = fetchedBookPictureList.first {
-            context.delete(targetBookPicture)
-            appDelegate?.saveContext()
-          }
-        }
-        completion()
-      } catch {
-        print("삭제실패")
-        completion()
-      }
-    }
-  }
-  
-  // 데이터 수정하기
+  // MARK: - Update
+
   func updateBookPictureData(updateData: BookPictureModel, completion: @escaping () -> Void) {
     if let context = context {
       let request = NSFetchRequest<NSManagedObject>(entityName: self.modelName)
@@ -124,5 +105,28 @@ final class CoredataPictureManager {
       }
     }
   }
+  
+  // MARK: - Delete
+
+  func deleteBookPictureData(data: BookPictureModel, completion: @escaping () -> Void) {
+    if let context = context {
+      let request = NSFetchRequest<NSManagedObject>(entityName: self.modelName)
+      request.predicate = NSPredicate(format: "id == %@", data.id)
+      
+      do {
+        if let fetchedBookPictureList = try context.fetch(request) as? [BookPictureDataModel] {
+          if let targetBookPicture = fetchedBookPictureList.first {
+            context.delete(targetBookPicture)
+            appDelegate?.saveContext()
+          }
+        }
+        completion()
+      } catch {
+        print("삭제실패")
+        completion()
+      }
+    }
+  }
+  
   
 }
