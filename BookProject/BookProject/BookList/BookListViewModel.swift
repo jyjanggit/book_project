@@ -24,10 +24,10 @@ protocol BookListCellDeleteDelegate: AnyObject {
 }
 
 protocol BookListRepository: AnyObject {
-  func fetchBooks() -> [Book]
-  func saveBookData(book: Book, completion: @escaping () -> Void)
-  func updateBookData(book: Book, completion: @escaping () -> Void)
-  func deleteBookData(book: Book, completion: @escaping () -> Void)
+  func fetchBooks() -> AnyPublisher<[Book], Never>
+  func saveBookData(book: Book) -> AnyPublisher<Void, Never>
+  func updateBookData(book: Book) -> AnyPublisher<Void, Never>
+  func deleteBookData(book: Book) -> AnyPublisher<Void, Never>
 }
 
 // MARK: - Repository
@@ -36,27 +36,49 @@ final class BookListRepositoryImpl: BookListRepository {
   
   private let coreDataManager = CoredataManager.shared
   
-  func fetchBooks() -> [Book] {
-    coreDataManager.getBookListFromCoreData().map { bookData in
-      Book(
-        id: bookData.id,
-        bookTitle: bookData.bookTitle,
-        totalPage: Int(bookData.totalPage),
-        currentPage: Int(bookData.currentPage)
-      )
-    }
+  func fetchBooks() -> AnyPublisher<[Book], Never> {
+    
+    return Future<[Book], Never> { [weak self] promise in
+      guard let self else {
+        promise(.success([]))
+        return
+      }
+      
+      let books = coreDataManager.getBookListFromCoreData().map { bookData in
+        Book(
+          id: bookData.id,
+          bookTitle: bookData.bookTitle,
+          totalPage: Int(bookData.totalPage),
+          currentPage: Int(bookData.currentPage)
+        )
+      }
+      promise(.success(books))
+    }.eraseToAnyPublisher()
   }
   
-  func saveBookData(book: Book, completion: @escaping () -> Void) {
-    coreDataManager.saveBookData(book: book, completion: completion)
+  func saveBookData(book: Book) -> AnyPublisher<Void, Never> {
+    return Future<Void, Never> { [weak self] promise in
+      self?.coreDataManager.saveBookData(book: book) {
+        promise(.success(()))
+      }
+    }.eraseToAnyPublisher()
   }
   
-  func updateBookData(book: Book, completion: @escaping () -> Void) {
-    coreDataManager.updateBookData(updateData: book, completion: completion)
+  func updateBookData(book: Book) -> AnyPublisher<Void, Never> {
+    return Future<Void, Never> { [weak self] promise in
+      self?.coreDataManager.updateBookData(updateData: book) {
+        promise(.success(()))
+      }
+    }.eraseToAnyPublisher()
   }
   
-  func deleteBookData(book: Book, completion: @escaping () -> Void) {
-    coreDataManager.deleteBookData(data: book, completion: completion)
+  func deleteBookData(book: Book) -> AnyPublisher<Void, Never> {
+    
+    return Future<Void, Never> { [weak self] promise in
+      self?.coreDataManager.deleteBookData(data: book) {
+        promise(.success(()))
+      }
+    }.eraseToAnyPublisher()
   }
   
 }
@@ -69,6 +91,7 @@ final class BookListViewModel {
   @Published var bookViewModels: [BookListCell.ViewModel] = []
   private let bookListRepository: BookListRepository
   private var books: [Book] = []
+  var cancellables = Set<AnyCancellable>()
   
   init(bookListRepository: BookListRepository) {
     self.bookListRepository = bookListRepository
@@ -76,8 +99,13 @@ final class BookListViewModel {
   
   // 데이터 호출(코어데이터에서)
   func loadBooks() {
-    self.books = bookListRepository.fetchBooks()
-    self.bookViewModels = convertToViewModels(self.books)
+    bookListRepository.fetchBooks()
+      .receive(on: DispatchQueue.main)
+      .sink { [weak self] fetchBooks in
+        guard let self else { return }
+        self.books = fetchBooks
+        self.bookViewModels = convertToViewModels(self.books)
+      }.store(in: &cancellables)
   }
   
   // ui가 사용할 수 있도록 변환해줌
@@ -105,15 +133,13 @@ final class BookListViewModel {
   // 책 추가
   func TappedAddButton(book: Book) {
     
-    bookListRepository.saveBookData(book: book) { [weak self] in
-      guard let self else {
-        return
-      }
-      
-      books.append(book)
-      self.bookViewModels = convertToViewModels(self.books)
-    }
-    
+    bookListRepository.saveBookData(book: book)
+      .sink { [weak self] in
+        guard let self else { return }
+        
+        books.append(book)
+        self.bookViewModels = convertToViewModels(self.books)
+      }.store(in: &cancellables)
   }
 
   // 책 수정
@@ -123,15 +149,13 @@ final class BookListViewModel {
       return
     }
     
-    bookListRepository.updateBookData(book: book) { [weak self] in
-      guard let self else {
-        return
-      }
+    bookListRepository.updateBookData(book: book)
+      .sink { [weak self] in
+        guard let self else { return }
       
-      self.books[targetIndex] = book
-      self.bookViewModels = convertToViewModels(books)
-    }
-    
+        self.books[targetIndex] = book
+        self.bookViewModels = convertToViewModels(books)
+      }.store(in: &cancellables)
   }
   
   // 책 삭제
@@ -141,14 +165,12 @@ final class BookListViewModel {
       return
     }
     
-    bookListRepository.deleteBookData(book: targetBookData) { [weak self] in
-      guard let self else {
-        return
-      }
-      
-      self.books.removeAll(where: { book in book.id == bookID })
-      self.bookViewModels = convertToViewModels(books)
-    }
-    
+    bookListRepository.deleteBookData(book: targetBookData)
+      .sink { [weak self] in
+        guard let self else { return }
+        
+        self.books.removeAll(where: { book in book.id == bookID })
+        self.bookViewModels = convertToViewModels(books)
+      }.store(in: &cancellables)
   }
 }

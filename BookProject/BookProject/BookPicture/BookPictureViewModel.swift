@@ -14,30 +14,50 @@ protocol UpdateBookPictureDelegate: AnyObject {
 // MARK: - Repository
 
 protocol BookPictureRepository: AnyObject {
-  func fetchPictures() -> [BookPictureModel]
-  func saveBookPictureData(picture: BookPictureModel, completion: @escaping () -> Void)
-  func deleteBookPictureData(data: BookPictureModel, completion: @escaping () -> Void)
-  func updateBookPictureData(updateData: BookPictureModel, completion: @escaping () -> Void)
+  func fetchPictures() -> AnyPublisher<[BookPictureModel], Never>
+  func saveBookPictureData(picture: BookPictureModel) -> AnyPublisher<Void, Never>
+  func updateBookPictureData(picture: BookPictureModel) -> AnyPublisher<Void, Never>
+  func deleteBookPictureData(picture: BookPictureModel) -> AnyPublisher<Void, Never>
 }
 
 final class BookPictureRepositoryImpl: BookPictureRepository {
   
   private let coreDataManager = CoredataPictureManager.shared
   
-  func fetchPictures() -> [BookPictureModel] {
-    coreDataManager.getBookPictureListFromCoreData()
+  func fetchPictures() -> AnyPublisher<[BookPictureModel], Never> {
+    
+    return Future<[BookPictureModel], Never> { [weak self] promise in
+      guard let self else {
+        promise(.success([]))
+        return
+      }
+      let pictures = self.coreDataManager.getBookPictureListFromCoreData()
+      promise(.success(pictures))
+    }.eraseToAnyPublisher()
   }
   
-  func saveBookPictureData(picture: BookPictureModel, completion: @escaping () -> Void) {
-    coreDataManager.saveBookPictureData(picture: picture, completion: completion)
+  func saveBookPictureData(picture: BookPictureModel) -> AnyPublisher<Void, Never> {
+    return Future<Void, Never> { [weak self] promise in
+      self?.coreDataManager.saveBookPictureData(picture: picture) {
+        promise(.success(()))
+      }
+    }.eraseToAnyPublisher()
   }
   
-  func updateBookPictureData(updateData: BookPictureModel, completion: @escaping () -> Void) {
-    coreDataManager.updateBookPictureData(updateData: updateData, completion: completion)
+  func updateBookPictureData(picture: BookPictureModel) -> AnyPublisher<Void, Never> {
+    return Future<Void, Never> { [weak self] promise in
+      self?.coreDataManager.updateBookPictureData(updateData: picture) {
+        promise(.success(()))
+      }
+    }.eraseToAnyPublisher()
   }
   
-  func deleteBookPictureData(data: BookPictureModel, completion: @escaping () -> Void) {
-    coreDataManager.deleteBookPictureData(data: data, completion: completion)
+  func deleteBookPictureData(picture: BookPictureModel) -> AnyPublisher<Void, Never> {
+    return Future<Void, Never> { [weak self] promise in
+      self?.coreDataManager.deleteBookPictureData(data: picture) {
+        promise(.success(()))
+      }
+    }.eraseToAnyPublisher()
   }
 }
 
@@ -48,14 +68,20 @@ final class BookPictureViewModel {
   @Published var pictureViewModels: [BookPictureCell.ViewModel] = []
   private let bookPictureRepository: BookPictureRepository
   private var pictures: [BookPictureModel] = []
+  var cancellables = Set<AnyCancellable>()
   
   init(bookPictureRepository: BookPictureRepository) {
     self.bookPictureRepository = bookPictureRepository
   }
   
   func loadPictures() {
-    self.pictures = bookPictureRepository.fetchPictures()
-    self.pictureViewModels = convertToViewModels(self.pictures)
+    bookPictureRepository.fetchPictures()
+      .receive(on: DispatchQueue.main)
+      .sink { [weak self] fetchPictures in
+        guard let self else { return }
+        self.pictures = fetchPictures
+        self.pictureViewModels = self.convertToViewModels(self.pictures)
+      }.store(in: &cancellables)
   }
   
   private func convertToViewModels(_ pictures: [BookPictureModel]) -> [BookPictureCell.ViewModel] {
@@ -73,43 +99,54 @@ final class BookPictureViewModel {
   }
   
   func findPicture(by id: String) -> BookPictureModel? {
+    
     pictures.first(where: { book in
       return book.id ==  id
     })
+    
   }
   
   func TappedAddButton(addPicture: BookPictureModel) {
-    bookPictureRepository.saveBookPictureData(picture: addPicture) { [weak self] in
-      guard let self else { return }
-      
-      pictures.append(addPicture)
-      self.pictureViewModels = convertToViewModels(self.pictures)
-    }
+    
+    bookPictureRepository.saveBookPictureData(picture: addPicture)
+      .sink{ [weak self] in
+        guard let self else { return }
+        
+        self.pictures.append(addPicture)
+        self.pictureViewModels = convertToViewModels(self.pictures)
+      }.store(in: &cancellables)
   }
   
   func TappedUpdateButton(updatedPicture: BookPictureModel, pictureID: String) {
+    
     guard let targetIndex = pictures.firstIndex(where: { book in book.id == pictureID }) else {
       return
     }
     
-    bookPictureRepository.updateBookPictureData(updateData: updatedPicture) { [weak self] in
-      guard let self else { return }
-      
-      self.pictures[targetIndex] = updatedPicture
-      self.pictureViewModels = convertToViewModels(self.pictures)
+    bookPictureRepository.updateBookPictureData(picture: updatedPicture)
+      .sink{ [weak self] in
+        guard let self else { return }
+        
+        self.pictures[targetIndex] = updatedPicture
+        self.pictureViewModels = convertToViewModels(self.pictures)
     }
+    
   }
   
   func TappedDeleteButton(pictureID: String) {
+    
     guard let targetPictureData = pictures.first(where: { book in book.id == pictureID }) else {
       return
     }
     
-    bookPictureRepository.deleteBookPictureData(data: targetPictureData) { [weak self] in
-      guard let self else { return }
+    bookPictureRepository.deleteBookPictureData(picture: targetPictureData)
+      .sink { [weak self] in
+        guard let self else { return }
       
-      pictures.removeAll(where: { book in book.id == pictureID })
-      self.pictureViewModels = convertToViewModels(self.pictures)
-    }
+        self.pictures.removeAll(where: { book in book.id == pictureID })
+        self.pictureViewModels = convertToViewModels(self.pictures)
+      }.store(in: &cancellables)
+    
   }
+  
 }
