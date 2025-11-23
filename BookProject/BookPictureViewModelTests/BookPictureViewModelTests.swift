@@ -19,13 +19,13 @@ final class 가짜_BookPictureRepository: BookPictureRepository {
   }
   
   var deletePictureDataCallCount = 0
-  func deleteBookPictureData(data: BookProject.BookPictureModel, completion: @escaping () -> Void) {
+  func deleteBookPictureData(picture: BookProject.BookPictureModel, completion: @escaping () -> Void) {
     deletePictureDataCallCount += 1
     completion()
   }
   
   var updatePictureDataCallCount = 0
-  func updateBookPictureData(updateData: BookProject.BookPictureModel, completion: @escaping () -> Void) {
+  func updateBookPictureData(picture: BookProject.BookPictureModel, completion: @escaping () -> Void) {
     updatePictureDataCallCount += 1
     completion()
   }
